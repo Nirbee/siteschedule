@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — docs/DESIGN.md. Components use semantic tokens only
+ * (bg-surface, text-muted, …); the default Tailwind palette is disabled.
+ * Light values live in @theme; dark values override the same variables below.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-bg: #f3f4f1;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f6f6f3;
+  --color-chip: #eeefea;
+  --color-line: #e2e4de;
+  --color-line-strong: #d5d8d0;
+  --color-ink: #15171c;
+  --color-ink-2: #3d414a;
+  --color-muted: #5b606b;
+  --color-emph: #15171c;
+  --color-on-emph: #ffffff;
+  --color-on-emph-muted: #b9bdc6;
+  --color-emph-raised: #23262d;
+  --color-accent: #2448d8;
+  --color-accent-solid: #2448d8;
+  --color-accent-solid-hover: #16309a;
+  --color-on-accent: #ffffff;
+
+  --color-cancel: #a53a12;
+  --color-cancel-bg: #fbe6dc;
+  --color-struck: #7d828c;
+  --color-change: #1f43c4;
+  --color-change-bg: #e4e9fc;
+  --color-move: #5e3391;
+  --color-move-bg: #efe7f8;
+  --color-add: #0f6b4d;
+  --color-add-bg: #ddf1e7;
+
+  --font-display: var(--font-unbounded), system-ui, sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --radius-badge: 7px;
+  --radius-field: 12px;
+  --radius-card: 16px;
+}
+
+/* Dark theme: system preference unless the user picked light. Keep in sync with the block below
+   (lib/theme/tokens.test.ts checks that both blocks are identical). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #111317;
+    --color-surface: #1a1d23;
+    --color-surface-muted: #20242b;
+    --color-chip: #262a32;
+    --color-line: #2a2e36;
+    --color-line-strong: #3a3f49;
+    --color-ink: #ecedef;
+    --color-ink-2: #c4c7ce;
+    --color-muted: #9097a3;
+    --color-emph: #e6e8ec;
+    --color-on-emph: #15171c;
+    --color-on-emph-muted: #4a4f59;
+    --color-emph-raised: #d3d6dd;
+    --color-accent: #8ea2ff;
+    --color-accent-solid: #3454e0;
+    --color-accent-solid-hover: #2943c0;
+    --color-on-accent: #ffffff;
+    --color-cancel: #ffa07e;
+    --color-cancel-bg: #3a1f16;
+    --color-struck: #7e8492;
+    --color-change: #9db1ff;
+    --color-change-bg: #1d2648;
+    --color-move: #cdaef7;
+    --color-move-bg: #2e2142;
+    --color-add: #74d6ac;
+    --color-add-bg: #12352a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #111317;
+  --color-surface: #1a1d23;
+  --color-surface-muted: #20242b;
+  --color-chip: #262a32;
+  --color-line: #2a2e36;
+  --color-line-strong: #3a3f49;
+  --color-ink: #ecedef;
+  --color-ink-2: #c4c7ce;
+  --color-muted: #9097a3;
+  --color-emph: #e6e8ec;
+  --color-on-emph: #15171c;
+  --color-on-emph-muted: #4a4f59;
+  --color-emph-raised: #d3d6dd;
+  --color-accent: #8ea2ff;
+  --color-accent-solid: #3454e0;
+  --color-accent-solid-hover: #2943c0;
+  --color-on-accent: #ffffff;
+  --color-cancel: #ffa07e;
+  --color-cancel-bg: #3a1f16;
+  --color-struck: #7e8492;
+  --color-change: #9db1ff;
+  --color-change-bg: #1d2648;
+  --color-move: #cdaef7;
+  --color-move-bg: #2e2142;
+  --color-add: #74d6ac;
+  --color-add-bg: #12352a;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-bg font-sans text-[15px] leading-[1.5] text-ink antialiased;
+  }
+
+  a {
+    @apply text-accent;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@utility font-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* «Оверлайн» из DESIGN.md (named eyebrow: `overline` is a built-in text-decoration utility). */
+@utility eyebrow {
+  @apply font-mono text-xs tracking-[0.08em] text-muted uppercase;
+}

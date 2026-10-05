@@ -5,6 +5,7 @@
 Пользователей мало (2 группы по ~20–30 человек, позже, возможно, ещё 1–2). Сайт должен быть простым, быстрым на телефоне и дешёвым в поддержке. Не усложнять архитектуру ради масштаба, которого не будет. Возможное мобильное приложение в будущем — поэтому логика в `lib/`, а не в компонентах.
 
 ## Документы — читать перед работой
+
 - `docs/SPEC.md` — что делаем: группы, роли, вход, разделы, бот, открытые вопросы
 - `docs/DATA_MODEL.md` и `docs/schema.sql` — модель данных, логика расписания, вход, API бота, автосортировка
 - `docs/DESIGN.md` — токены (светлая и тёмная тема), шрифты, цвета статусов, компоненты
@@ -12,6 +13,7 @@
 - `design/*.dc.html` — согласованные макеты (референс, не код для копирования; там свой рантайм)
 
 ## Стек
+
 - Next.js 16 (App Router, Server Components, Server Actions), React 19, TypeScript strict
 - Tailwind CSS v4, токены из `docs/DESIGN.md` в `@theme` + CSS-переменные для тёмной темы
 - PostgreSQL 17 + Drizzle ORM (миграции через drizzle-kit). После M0 источник истины по схеме — `lib/db/schema.ts`
@@ -25,6 +27,7 @@
 - Деплой: Docker Compose (app + postgres + bot + caddy), образы собираются в GitHub Actions → GHCR, reverse proxy Caddy
 
 ## Команды (настраиваются на M0)
+
 - `pnpm dev` — сайт; `pnpm bot:dev` — бот
 - `pnpm db:generate` / `pnpm db:migrate` — миграции
 - `pnpm db:seed` — демо-данные
@@ -33,9 +36,10 @@
 - `docker compose up -d` — postgres локально
 
 ## Структура
+
 ```
 app/                    маршруты (RU-интерфейс)
-  (app)/today, week, topics, exams, library, news, profile
+  (app)/                «Сегодня» на /, week, topics, exams, library, news, profile
   (staff)/manage/...    панель старосты и админа
   login/, join-group/   вход, QR, выбор группы
   api/auth/poll         ожидание входа
@@ -58,6 +62,7 @@ docs/, design/          ТЗ и макеты
 ```
 
 ## Правила
+
 - Интерфейс полностью на русском. Код, имена переменных, коммиты — на английском.
 - **Репозиторий публичный.** Никаких реальных данных (расписание, ФИО, Telegram ID, экспорты чата, фото) и секретов в git. Seed — только демо-данные. Реальные данные — через админку или файлы в `data/private/` (в `.gitignore`).
 - Все проверки прав — на сервере (server actions / route handlers), не только скрытием кнопок. Роли: `student`, `starosta`, `admin`.

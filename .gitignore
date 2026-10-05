@@ -24,3 +24,6 @@ Thumbs.db
 *.log
 .vscode/*
 !.vscode/extensions.json
+
+# local Claude Code settings
+.claude/settings.local.json
