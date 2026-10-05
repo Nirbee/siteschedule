@@ -85,11 +85,15 @@ interface ResolvedLesson {
 3. Сервер: upsert пользователя (`bot_started = true`, `has_access ||= isChatMember`), заявка → `confirmed`. Бот отвечает в личке «Готово, вернитесь на сайт» с кнопкой-ссылкой.
 4. Браузер опрашивает `GET /api/auth/poll` (раз в 2 с; при возврате на вкладку — сразу). При `confirmed` → создаётся сессия, заявка → `consumed`.
 
-**Сессия:** случайный токен 32 байта в cookie `para_session` (httpOnly, Secure, SameSite=Lax, Max-Age 400 дней). В БД хранится `sha256(token)`. При запросе, если `last_used_at` старше суток, — продлеваем `expires_at` и cookie. Отзыв — `revoked_at`.
+**Сессия:** случайный токен 32 байта в cookie `para_session` (httpOnly, Secure, SameSite=Lax, Max-Age 400 дней). В БД хранится `sha256(token)`. При запросе, если `last_used_at` старше суток, — продлеваем `expires_at` в БД; cookie переиздаётся на 400 дней при каждой загрузке страницы (`proxy.ts`). Отзыв — `revoked_at`.
 
 **QR на другом устройстве:** новое устройство создаёт заявку `method = qr` и показывает QR со ссылкой `/login/approve/<code>`. Залогиненный телефон открывает ссылку, видит «Войти на другом устройстве?» и подтверждает своей сессией → заявка `confirmed` с его `user_id` → новое устройство получает сессию через тот же poll.
 
-**Ссылка от админа:** заявка `method = admin_link` с заданным `user_id`, живёт до 7 дней, одноразовая. Открытие ссылки сразу создаёт сессию.
+**Ссылка от админа:** заявка `method = admin_link` с заданным `user_id`, живёт до 7 дней, одноразовая. Сессия создаётся только по кнопке «Войти» на странице ссылки — не при открытии, иначе ссылку «съест» превью в Telegram.
+
+**Первый админ:** Telegram id из `ADMIN_TELEGRAM_IDS` при входе получают роль `admin` и доступ. Остальные роли назначаются на `/manage/users`.
+
+**Без чата (только разработка):** если боту не задан `TELEGRAM_CHAT_ID`, он сообщает `isChatMember: null`; доступ тогда выдаётся только при `ACCESS_WITHOUT_CHAT_CHECK=true`, в production эта настройка запрещена.
 
 **Доступ:** `has_access && !is_blocked && group.is_enabled`. Без группы — экран выбора группы. Guards: `requireUser`, `requireMember`, `requireRole('starosta')`. Проверяются на сервере в каждом server action и route handler.
 

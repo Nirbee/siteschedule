@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound } from "lucide-react";
+import { CircleUserRound, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { NAV_ITEMS, isActive } from "./nav-items";
 
-export function TopNav() {
+export function TopNav({ isStaff }: { isStaff: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -30,10 +30,20 @@ export function TopNav() {
             );
           })}
         </nav>
+        {isStaff ? (
+          <Link
+            href="/manage"
+            aria-label="Панель старосты"
+            aria-current={isActive(pathname, "/manage") ? "page" : undefined}
+            className="ml-auto flex size-11 items-center justify-center rounded-field text-ink-2 hover:bg-chip"
+          >
+            <ShieldCheck size={22} strokeWidth={1.8} />
+          </Link>
+        ) : null}
         <Link
           href="/profile"
           aria-label="Профиль"
-          className="ml-auto flex size-11 items-center justify-center rounded-field text-ink-2 hover:bg-chip"
+          className={`${isStaff ? "" : "ml-auto"}flex size-11 items-center justify-center rounded-field text-ink-2 hover:bg-chip`}
         >
           <CircleUserRound size={22} strokeWidth={1.8} />
         </Link>
