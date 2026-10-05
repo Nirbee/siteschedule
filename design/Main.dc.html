@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Пара — сегодня</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F1}
+a{color:#2448D8}a:hover{color:#16309A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F4F1; font-family: 'Manrope', system-ui, sans-serif; color: #15171C">
+
+<header style="background: #FFFFFF; border-bottom: 1px solid #E2E4DE">
+<div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<a href="Main.dc.html" style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 22px; color: #15171C; text-decoration: none; letter-spacing: -0.02em">пара<span style="color: {{accent}}">.</span></a>
+<nav style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1">
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; background: #15171C; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 14px">Сегодня</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Расписание</a>
+<a href="Topics.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Темы</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Рубежки</a>
+<a href="Library.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Конспекты</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Новости</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 12px">
+<button aria-label="Уведомления" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2E4DE; background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15171C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span style="position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C2491B"></span>
+</button>
+<div style="width: 44px; height: 44px; border-radius: 12px; background: #15171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700">Н</div>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 36px 24px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<section style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #5B606B; text-transform: uppercase; letter-spacing: 0.08em">Неделя 6 · нечётная</div>
+<h1 style="margin: 8px 0 0; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -0.03em; line-height: 1.1">Понедельник, 5 октября</h1>
+<p style="margin: 10px 0 0; font-size: 17px; color: #3D414A">3 пары по плану · <strong style="color: #A53A12">1 отмена</strong> и <strong style="color: #1F43C4">1 замена</strong> от старосты</p>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<a href="Main.dc.html" style="padding: 12px 16px; border-radius: 12px; border: 1px solid #D5D8D0; background: #FFFFFF; color: #15171C; text-decoration: none; font-weight: 600; font-size: 14px">Вся неделя</a>
+<a href="Main.dc.html" style="padding: 12px 16px; border-radius: 12px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 14px">Добавить в календарь</a>
+</div>
+</section>
+
+<section aria-label="Неделя" style="display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr)); gap: 8px; overflow-x: auto">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="6">
+<sc-if value="{{d.today}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 14px; border-radius: 14px; background: #15171C; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; min-height: 84px">
+<div style="font-size: 13px; color: #B9BDC6">{{d.dow}}</div>
+<div style="font-family: 'Unbounded', sans-serif; font-size: 22px; font-weight: 700">{{d.date}}</div>
+<div style="font-size: 13px">{{d.count}}</div>
+</div>
+</sc-if>
+<sc-if value="{{d.other}}" hint-placeholder-val="{{ true }}">
+<div style="padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E2E4DE; display: flex; flex-direction: column; gap: 6px; min-height: 84px">
+<div style="font-size: 13px; color: #5B606B">{{d.dow}}</div>
+<div style="font-family: 'Unbounded', sans-serif; font-size: 22px; font-weight: 700">{{d.date}}</div>
+<div style="font-size: 13px; color: #3D414A">{{d.count}}</div>
+<sc-if value="{{d.hasFlag}}" hint-placeholder-val="{{ false }}">
+<div style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #EFE7F8; color: #5E3391">{{d.flag}}</div>
+</sc-if>
+</div>
+</sc-if>
+</sc-for>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+<section style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0 0 4px; font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 700">Пары сегодня</h2>
+<sc-for list="{{pairs}}" as="p" hint-placeholder-count="3">
+<article style="display: flex; flex-wrap: wrap; gap: 20px; padding: 22px; background: #FFFFFF; border: 1px solid #E2E4DE; border-radius: 16px">
+<div style="width: 76px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace">
+<div style="font-size: 12px; color: #5B606B">{{p.n}} пара</div>
+<div style="font-size: 20px; font-weight: 600; margin-top: 4px">{{p.time}}</div>
+<div style="font-size: 14px; color: #5B606B">{{p.end}}</div>
+</div>
+<div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span style="font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 6px; background: #EEEFEA; color: #3D414A">{{p.kind}}</span>
+<sc-if value="{{p.isCancel}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 6px; background: #FBE6DC; color: #A53A12">Отменена</span></sc-if>
+<sc-if value="{{p.isReplace}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 6px; background: #E4E9FC; color: #1F43C4">Замена</span></sc-if>
+</div>
+<sc-if value="{{p.isCancel}}" hint-placeholder-val="{{ false }}"><h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #7D828C; text-decoration: line-through">{{p.title}}</h3></sc-if>
+<sc-if value="{{p.notCancel}}" hint-placeholder-val="{{ true }}"><h3 style="margin: 0; font-size: 20px; font-weight: 700">{{p.title}}</h3></sc-if>
+<sc-if value="{{p.isReplace}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #1F43C4">вместо «{{p.was}}» · {{p.roomChange}}</div></sc-if>
+<div style="font-size: 14px; color: #5B606B">{{p.room}} · {{p.teacher}}</div>
+<sc-if value="{{p.hasNote}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #F6F6F3; font-size: 14px; color: #3D414A; line-height: 1.45">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D414A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M3 11l18-8v18L3 13z"></path><path d="M7 12v6a2 2 0 0 0 4 0v-4"></path></svg>
+<span>{{p.note}}</span>
+</div>
+</sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex: 0 0 180px">
+<a href="Library.dc.html" style="display: flex; align-items: center; gap: 8px; padding: 11px 12px; border-radius: 10px; border: 1px solid #E2E4DE; color: #15171C; text-decoration: none; font-size: 14px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15171C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2"></circle><path d="M21 17l-5-5-9 7"></path></svg>
+Конспекты · {{p.files}}</a>
+<a href="Topics.dc.html" style="display: flex; align-items: center; gap: 8px; padding: 11px 12px; border-radius: 10px; border: 1px solid #E2E4DE; color: #15171C; text-decoration: none; font-size: 14px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15171C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+Темы</a>
+</div>
+</article>
+</sc-for>
+</section>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<section style="background: #FFFFFF; border: 1px solid #E2E4DE; border-radius: 16px; padding: 20px">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px">
+<h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 700">От старосты</h2>
+<a href="Main.dc.html" style="font-size: 14px; font-weight: 600">Все новости</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{news}}" as="n" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid #EEEFEA">
+<div style="display: flex; gap: 8px; align-items: center; font-size: 13px; color: #5B606B">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #E4E9FC; color: #1F43C4; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px">{{n.initial}}</span>
+<span style="font-weight: 600; color: #15171C">{{n.who}}</span>
+<span>· {{n.time}}</span>
+<sc-if value="{{n.pinned}}" hint-placeholder-val="{{ false }}"><span style="margin-left: auto; font-size: 12px; font-weight: 700; color: #A53A12">Важно</span></sc-if>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">{{n.text}}</p>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="background: #15171C; color: #FFFFFF; border-radius: 16px; padding: 20px">
+<h2 style="margin: 0 0 14px; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 700">Рубежный контроль</h2>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{exams}}" as="e" hint-placeholder-count="3">
+<div style="display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: 12px; background: #23262D">
+<div style="width: 56px; flex-shrink: 0; text-align: center; font-family: 'JetBrains Mono', monospace">
+<div style="font-size: 20px; font-weight: 600">{{e.day}}</div>
+<div style="font-size: 12px; color: #B9BDC6">{{e.month}}</div>
+</div>
+<div style="flex: 1; min-width: 0">
+<div style="font-size: 15px; font-weight: 600">{{e.subj}}</div>
+<div style="font-size: 13px; color: #B9BDC6; margin-top: 2px">{{e.form}} · {{e.left}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #E2E4DE; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #5B606B; text-transform: uppercase; letter-spacing: 0.08em">Твоя тема · Правовое обеспечение ИБ</div>
+<div style="font-size: 17px; font-weight: 700; line-height: 1.35">Защита персональных данных в облачных сервисах</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 14px">
+<span style="padding: 5px 10px; border-radius: 8px; background: #E4E9FC; color: #1F43C4; font-weight: 700">Сдача 19 октября</span>
+<span style="padding: 5px 10px; border-radius: 8px; background: #EEEFEA; color: #3D414A; font-weight: 600">3-й в очереди</span>
+</div>
+<a href="Topics.dc.html" style="font-size: 14px; font-weight: 600">Открыть список тем</a>
+</section>
+
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2448D8","options":["#2448D8","#0F7A5C","#C2491B","#15171C"]},"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var pairs = [
+      { n: '1', time: '14:00', end: '15:30', kind: 'Лекция', title: 'Криптографические протоколы', room: 'ауд. 412', teacher: '[Преподаватель]', files: '12 фото', status: 'ok' },
+      { n: '2', time: '15:40', end: '17:10', kind: 'Практика', title: 'Управление информационной безопасностью', room: 'ауд. 305', teacher: '[Преподаватель]', files: '4 фото', status: 'cancel', note: 'Преподаватель на конференции, отработку назначат позже. — Катя, староста, 12:40' },
+      { n: '3', time: '17:20', end: '18:50', kind: 'Семинар', title: 'Правовое обеспечение ИБ', was: 'Аудит ИБ', roomChange: 'ауд. 305 → 210', room: 'ауд. 210', teacher: '[Преподаватель]', files: '7 фото', status: 'replace', note: 'Сегодня выступают первые трое по темам — список на странице «Темы».' }
+    ];
+    pairs = pairs.map(function (p) {
+      return Object.assign({}, p, {
+        isCancel: p.status === 'cancel',
+        notCancel: p.status !== 'cancel',
+        isReplace: p.status === 'replace',
+        hasNote: !!p.note
+      });
+    });
+    var days = [
+      { dow: 'Пн', date: '5', count: '3 пары', today: true },
+      { dow: 'Вт', date: '6', count: '2 пары' },
+      { dow: 'Ср', date: '7', count: '1 пара', flag: 'перенос → сб' },
+      { dow: 'Чт', date: '8', count: '3 пары' },
+      { dow: 'Пт', date: '9', count: '2 пары' },
+      { dow: 'Сб', date: '10', count: '1 пара', flag: '+ Аудит ИБ' }
+    ].map(function (d) { return Object.assign({}, d, { today: !!d.today, other: !d.today, hasFlag: !!d.flag }); });
+    return {
+      accent: this.props.accent ?? '#2448D8',
+      pairs: pairs,
+      days: days,
+      news: [
+        { initial: 'К', who: 'Катя', time: '12:40', pinned: true, text: 'Вторая пара сегодня отменена. Аудит ИБ со среды переносится на субботу, 10:00.' },
+        { initial: 'К', who: 'Катя', time: 'вчера', text: 'До пятницы выберите темы по правовому — свободные отмечены на сайте.' },
+        { initial: 'М', who: 'Миша', time: '2 окт', text: 'Допуск к рубежке по криптографии: все 4 практические должны быть сданы.' }
+      ],
+      exams: [
+        { day: '14', month: 'окт', subj: 'Криптографические протоколы', form: 'Письменная работа', left: 'через 9 дней' },
+        { day: '21', month: 'окт', subj: 'Управление ИБ', form: 'Тест', left: 'через 16 дней' },
+        { day: '28', month: 'окт', subj: 'Правовое обеспечение ИБ', form: 'Защита реферата', left: 'через 23 дня' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

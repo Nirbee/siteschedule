@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Пара — телефон</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2448D8}a:hover{color:#16309A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F1; font-family: 'Manrope', system-ui, sans-serif; color: #15171C; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="flex: 1; overflow: hidden; padding: 28px 18px 0; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 20px">пара<span style="color: #2448D8">.</span></span>
+<div style="width: 40px; height: 40px; border-radius: 12px; background: #15171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700">Н</div>
+</div>
+<div>
+<div style="font-size: 14px; color: #5B606B">Понедельник</div>
+<h1 style="margin: 2px 0 0; font-family: 'Unbounded', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.03em">5 октября</h1>
+</div>
+
+<div style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #FBE6DC; color: #7A2A0B; font-size: 14px; line-height: 1.4">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A2A0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M3 11l18-8v18L3 13z"></path><path d="M7 12v6a2 2 0 0 0 4 0v-4"></path></svg>
+<span><strong>2 изменения сегодня.</strong> Вторая пара отменена, третья — замена.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{pairs}}" as="p" hint-placeholder-count="3">
+<div style="display: flex; gap: 12px; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E2E4DE">
+<div style="width: 50px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace">
+<div style="font-size: 15px; font-weight: 600">{{p.time}}</div>
+<div style="font-size: 12px; color: #5B606B">{{p.end}}</div>
+</div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<sc-if value="{{p.isCancel}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; font-weight: 700; color: #7D828C; text-decoration: line-through">{{p.title}}</div></sc-if>
+<sc-if value="{{p.notCancel}}" hint-placeholder-val="{{ true }}"><div style="font-size: 15px; font-weight: 700">{{p.title}}</div></sc-if>
+<div style="font-size: 13px; color: #5B606B">{{p.meta}}</div>
+<sc-if value="{{p.isCancel}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 6px; background: #FBE6DC; color: #A53A12">Отменена</span></sc-if>
+<sc-if value="{{p.isReplace}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 6px; background: #E4E9FC; color: #1F43C4">Замена · было «Аудит ИБ»</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #15171C; color: #FFFFFF">
+<div style="font-family: 'JetBrains Mono', monospace; text-align: center; width: 44px">
+<div style="font-size: 18px; font-weight: 600">14</div>
+<div style="font-size: 11px; color: #B9BDC6">окт</div>
+</div>
+<div style="flex: 1">
+<div style="font-size: 12px; color: #B9BDC6">Ближайший рубежный контроль</div>
+<div style="font-size: 15px; font-weight: 700">Криптографические протоколы</div>
+</div>
+</div>
+</div>
+
+<nav aria-label="Разделы" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 6px 22px; background: #FFFFFF; border-top: 1px solid #E2E4DE">
+<a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; min-height: 44px; color: #15171C; text-decoration: none; font-size: 11px; font-weight: 700">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Сегодня</a>
+<a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; min-height: 44px; color: #5B606B; text-decoration: none; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B606B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Темы</a>
+<a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; min-height: 44px; color: #5B606B; text-decoration: none; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B606B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Конспекты</a>
+<a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; min-height: 44px; color: #5B606B; text-decoration: none; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B606B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Рубежки</a>
+<a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; min-height: 44px; color: #5B606B; text-decoration: none; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B606B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>Новости</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var pairs = [
+      { time: '14:00', end: '15:30', title: 'Криптографические протоколы', meta: 'Лекция · ауд. 412', s: 'ok' },
+      { time: '15:40', end: '17:10', title: 'Управление ИБ', meta: 'Практика · ауд. 305', s: 'cancel' },
+      { time: '17:20', end: '18:50', title: 'Правовое обеспечение ИБ', meta: 'Семинар · ауд. 210', s: 'replace' }
+    ].map(function (p) { return Object.assign({}, p, { isCancel: p.s === 'cancel', notCancel: p.s !== 'cancel', isReplace: p.s === 'replace' }); });
+    return { pairs: pairs };
+  }
+}
+</script>
+</body>
+</html>

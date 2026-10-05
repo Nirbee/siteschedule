@@ -1,0 +1,26 @@
+# dependencies & build
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# local data (real schedule, Telegram exports, uploaded files) — never commit
+data/private/
+storage/
+tg-export/
+
+# misc
+_archive/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json

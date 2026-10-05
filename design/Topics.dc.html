@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Пара — темы</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F1}
+a{color:#2448D8}a:hover{color:#16309A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F4F1; font-family: 'Manrope', system-ui, sans-serif; color: #15171C">
+
+<header style="background: #FFFFFF; border-bottom: 1px solid #E2E4DE">
+<div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<a href="Main.dc.html" style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 22px; color: #15171C; text-decoration: none; letter-spacing: -0.02em">пара<span style="color: #2448D8">.</span></a>
+<nav style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1">
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Сегодня</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Расписание</a>
+<a href="Topics.dc.html" style="padding: 10px 14px; border-radius: 10px; background: #15171C; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 14px">Темы</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Рубежки</a>
+<a href="Library.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Конспекты</a>
+<a href="Main.dc.html" style="padding: 10px 14px; border-radius: 10px; color: #3D414A; text-decoration: none; font-weight: 600; font-size: 14px">Новости</a>
+</nav>
+<div style="width: 44px; height: 44px; border-radius: 12px; background: #15171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700">Н</div>
+</div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 24px">
+
+<section style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #5B606B; text-transform: uppercase; letter-spacing: 0.08em">Доклады и рефераты</div>
+<h1 style="margin: 8px 0 0; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.03em">Правовое обеспечение ИБ</h1>
+<p style="margin: 8px 0 0; font-size: 16px; color: #3D414A">Выбор тем до <strong>9 октября</strong> · 14 из 20 тем заняты · одна тема — один человек</p>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #5B606B">Дисциплина
+<select style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D5D8D0; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #15171C; min-width: 260px">
+<option>Правовое обеспечение ИБ</option>
+<option>Управление ИБ</option>
+<option>Аудит ИБ</option>
+</select>
+</label>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section style="flex: 999 1 640px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E4DE; border-radius: 16px; overflow-x: auto">
+<table style="width: 100%; border-collapse: collapse; min-width: 680px; font-size: 15px">
+<thead>
+<tr style="text-align: left; color: #5B606B; font-size: 13px">
+<th style="padding: 16px 20px; font-weight: 600; border-bottom: 1px solid #E2E4DE; width: 40px">№</th>
+<th style="padding: 16px 12px; font-weight: 600; border-bottom: 1px solid #E2E4DE">Тема</th>
+<th style="padding: 16px 12px; font-weight: 600; border-bottom: 1px solid #E2E4DE">Кто выбрал</th>
+<th style="padding: 16px 12px; font-weight: 600; border-bottom: 1px solid #E2E4DE">Сдача</th>
+<th style="padding: 16px 20px; font-weight: 600; border-bottom: 1px solid #E2E4DE; text-align: right">Статус</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+<tr>
+<td style="padding: 14px 20px; border-bottom: 1px solid #EEEFEA; font-family: 'JetBrains Mono', monospace; color: #5B606B">{{r.n}}</td>
+<td style="padding: 14px 12px; border-bottom: 1px solid #EEEFEA; font-weight: 600">{{r.topic}}</td>
+<td style="padding: 14px 12px; border-bottom: 1px solid #EEEFEA; color: #3D414A">{{r.who}}</td>
+<td style="padding: 14px 12px; border-bottom: 1px solid #EEEFEA; font-family: 'JetBrains Mono', monospace; color: #3D414A">{{r.date}}</td>
+<td style="padding: 10px 20px; border-bottom: 1px solid #EEEFEA; text-align: right">
+<sc-if value="{{r.isFree}}" hint-placeholder-val="{{ false }}"><button onClick="{{r.take}}" style="padding: 9px 14px; border-radius: 10px; border: 1px solid #2448D8; background: #FFFFFF; color: #2448D8; font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer">Взять тему</button></sc-if>
+<sc-if value="{{r.isMine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #2448D8; color: #FFFFFF">Твоя</span></sc-if>
+<sc-if value="{{r.isTaken}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #EEEFEA; color: #3D414A">Занята</span></sc-if>
+<sc-if value="{{r.isDone}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #DDF1E7; color: #0F6B4D">Сдано</span></sc-if>
+</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</section>
+
+<aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<section style="background: #FFFFFF; border: 1px solid #E2E4DE; border-radius: 16px; padding: 20px">
+<h2 style="margin: 0 0 16px; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 700">Очередь сдачи</h2>
+<div style="display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{queue}}" as="q" hint-placeholder-count="3">
+<div style="display: flex; gap: 14px">
+<div style="width: 56px; flex-shrink: 0; text-align: center; padding: 8px 0; border-radius: 10px; background: #15171C; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; align-self: flex-start">
+<div style="font-size: 18px; font-weight: 600">{{q.day}}</div>
+<div style="font-size: 11px; color: #B9BDC6">{{q.month}}</div>
+</div>
+<ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.4">
+<sc-for list="{{q.people}}" as="p" hint-placeholder-count="3"><li>{{p}}</li></sc-for>
+</ol>
+</div>
+</sc-for>
+</div>
+</section>
+<section style="background: #E4E9FC; border-radius: 16px; padding: 20px; font-size: 14px; line-height: 1.5; color: #1A2E78">
+<strong style="display: block; font-size: 15px; margin-bottom: 6px">Как работает выбор</strong>
+Нажимаешь «Взять тему» — она закрепляется за тобой, дату сдачи назначает староста. Поменяться темами можно до дедлайна.
+</section>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { taken: {} }; }
+  renderVals() {
+    var self = this;
+    var base = [
+      { n: '1', topic: 'Федеральный закон о персональных данных: обзор', who: 'Артём Л.', date: '12.10', st: 'done' },
+      { n: '2', topic: 'Категорирование объектов КИИ', who: 'Катя С.', date: '12.10', st: 'taken' },
+      { n: '3', topic: 'Лицензирование деятельности по защите информации', who: 'Миша Р.', date: '12.10', st: 'taken' },
+      { n: '4', topic: 'Защита персональных данных в облачных сервисах', who: 'Нирбе', date: '19.10', st: 'mine' },
+      { n: '5', topic: 'Электронная подпись: правовой статус', who: 'Даша К.', date: '19.10', st: 'taken' },
+      { n: '6', topic: 'Коммерческая тайна и режим её охраны', who: '—', date: '—', st: 'free' },
+      { n: '7', topic: 'Сертификация средств защиты информации', who: 'Олег В.', date: '19.10', st: 'taken' },
+      { n: '8', topic: 'Ответственность за нарушения в сфере ИБ', who: '—', date: '—', st: 'free' },
+      { n: '9', topic: 'Международные стандарты: ISO/IEC 27001', who: 'Лиза П.', date: '26.10', st: 'taken' }
+    ];
+    var rows = base.map(function (r) {
+      var st = self.state.taken[r.n] ? 'mine' : r.st;
+      return Object.assign({}, r, {
+        who: self.state.taken[r.n] ? 'Нирбе' : r.who,
+        date: self.state.taken[r.n] ? 'назначит староста' : r.date,
+        isFree: st === 'free', isMine: st === 'mine', isTaken: st === 'taken', isDone: st === 'done',
+        take: function () { var t = Object.assign({}, self.state.taken); t[r.n] = true; self.setState({ taken: t }); }
+      });
+    });
+    return {
+      rows: rows,
+      queue: [
+        { day: '12', month: 'окт', people: ['Артём Л.', 'Катя С.', 'Миша Р.'] },
+        { day: '19', month: 'окт', people: ['Даша К.', 'Олег В.', 'Нирбе'] },
+        { day: '26', month: 'окт', people: ['Лиза П.', '[свободно]', '[свободно]'] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
