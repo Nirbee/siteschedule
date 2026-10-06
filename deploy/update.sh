@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")"
 
 docker compose pull app bot
-docker compose up -d postgres
+docker compose up -d --wait postgres
 docker compose run --rm --no-deps app node dist/scripts/migrate.cjs
 docker compose up -d --remove-orphans
 docker image prune -f >/dev/null

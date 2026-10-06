@@ -27,3 +27,4 @@ echo "30 4 * * * root /opt/para/backup.sh >> /var/log/para-backup.log 2>&1" > /e
 - База: `docker compose exec postgres psql -U para para`
 - Бэкапы: `/var/backups/para` (дамп `pg_dump -Fc` + архив файлов), хранятся 14 дней. Восстановление: `docker compose exec -T postgres pg_restore -U para -d para --clean < db-….dump`.
 - Бот с одним токеном может работать только в одном месте: локальный `pnpm bot:dev` с прод-токеном конфликтует с ботом на сервере (409 Conflict). Для разработки — отдельный тестовый бот.
+- Бот собирается esbuild с `--keep-names`: без него класс `AbortSignal` из полифила grammY переименовывается в бандле, node-fetch отвергает сигнал, и каждый запрос к Telegram падает («Network request for 'getMe' failed!»). Бот при этом не падает, а молча не стартует.
