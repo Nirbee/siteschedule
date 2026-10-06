@@ -235,6 +235,7 @@ create table media (
   view_key            text,                       -- PDF-копия для просмотра (Office, DjVu)
   view_status         text not null default 'none', -- none | pending | ready | failed
   server_pages        boolean,                    -- скан (CCITT/JBIG2): страницы рисует сервер (MuPDF); null — не проверено
+  text_status         text not null default 'none', -- поиск: none (нечего индексировать) | pending | ready | failed
   mime                text not null,
   size_bytes          int not null,
   width               int,
@@ -263,6 +264,18 @@ create table media (
   check (status = 'unsorted' or subject_id is not null),
   check (lesson_note_id is null or subject_id is not null)
 );
+
+-- Текст страниц для поиска: слой текста PDF (MuPDF) или OCR (Tesseract, rus+eng) для сканов и фото.
+create table media_pages (
+  media_id    uuid not null references media(id) on delete cascade,
+  page        int not null,                       -- с 1; у фото одна страница
+  text        text not null,
+  source      text not null,                      -- text | ocr
+  tsv         tsvector generated always as (to_tsvector('russian', text)) stored,
+  primary key (media_id, page)
+);
+create index media_pages_tsv on media_pages using gin (tsv);
+
 create index on media (lesson_note_id, sort) where deleted_at is null;
 create index on media (subject_id) where deleted_at is null and lesson_note_id is null;
 create index on media (status) where status = 'unsorted' and deleted_at is null;

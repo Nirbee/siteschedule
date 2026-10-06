@@ -6,6 +6,7 @@
 - Push в `main` → CI (lint, typecheck, test, build) → workflow **Image** собирает образ `ghcr.io/nirbee/siteschedule:latest` (и тег с SHA коммита). Сервер ничего не собирает.
 - Один образ: сайт (`node server.js`), бот (`node dist/bot/index.cjs`), скрипты (`dist/scripts/*.cjs`).
 - Gotenberg (LibreOffice) — отдельный контейнер для PDF-копий Office-файлов, доступен только сайту по `http://gotenberg:3000`, лимит памяти 1 ГБ.
+- В образе сайта: `ddjvu` (DjVu → PDF), `mutool` (MuPDF: страницы сканов, текст PDF), `tesseract` с языками rus+eng (распознавание сканов и фото для поиска; один поток, ~4 с на страницу — после первого выката старые файлы индексируются в фоне несколько часов).
 - Caddy получает HTTPS-сертификат сам, `www.` перенаправляет на основной домен. Наружу открыты только 80/443; Postgres доступен только внутри Docker-сети.
 
 ## Первый запуск

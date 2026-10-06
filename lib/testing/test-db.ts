@@ -25,6 +25,7 @@ const TABLES = [
   "audit_log",
   "outbox",
   "news",
+  "media_pages",
   "media",
   "lesson_notes",
   "topic_members",

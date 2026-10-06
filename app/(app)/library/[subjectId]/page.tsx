@@ -149,6 +149,14 @@ export default async function SubjectLibraryPage({
             />
           </form>
         </div>
+        {q.trim().length >= 2 ? (
+          <Link
+            href={`/library?q=${encodeURIComponent(q.trim())}` as Route}
+            className="-mt-2 self-start text-[14px] font-semibold"
+          >
+            Искать «{q.trim()}» в тексте всех файлов →
+          </Link>
+        ) : null}
 
         {tab === "lessons" ? (
           <>

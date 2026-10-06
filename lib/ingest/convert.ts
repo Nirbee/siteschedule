@@ -12,6 +12,7 @@ import { objectPath, writeObject } from "@/lib/storage/disk";
 import { extensionOf } from "./detect";
 import { heavyJob } from "./limit";
 import { isFaxScan, pdfPageCount } from "./pdf";
+import { kickTextIndex } from "./text-index";
 
 const OFFICE = new Set(["doc", "docx", "ppt", "pptx", "xls", "xlsx", "odt", "odp", "ods", "rtf"]);
 
@@ -100,6 +101,7 @@ export async function processViewCopies(): Promise<void> {
       if (!next) break;
       try {
         await heavyJob(() => createViewCopy(next));
+        kickTextIndex(); // the copy is what search reads
       } catch (error) {
         if (error instanceof ConverterUnavailable) break; // try again on a machine that has it
         console.error(
@@ -107,7 +109,10 @@ export async function processViewCopies(): Promise<void> {
           error instanceof Error ? error.message : error,
         );
         // Leaves the queue; the original is still downloadable.
-        await db().update(media).set({ viewStatus: "failed" }).where(eq(media.id, next.id));
+        await db()
+          .update(media)
+          .set({ viewStatus: "failed", textStatus: "none" })
+          .where(eq(media.id, next.id));
       }
     }
   } finally {

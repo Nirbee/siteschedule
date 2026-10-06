@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 
 export const MIN_ZOOM = 0.5;
@@ -50,4 +51,48 @@ export function pageAtScroll(scroller: HTMLElement, pages: (HTMLElement | null)[
     if (box && box.offsetTop <= line) current = i + 1;
   });
   return current;
+}
+
+/**
+ * Opens a document at a given page (from search results). Keeps re-aligning while page
+ * heights settle, until the reader touches the document. Returns a function to call after
+ * a page changed its height.
+ */
+export function useJumpToPage(
+  scroller: React.RefObject<HTMLDivElement | null>,
+  pages: React.RefObject<(HTMLDivElement | null)[]>,
+  page: number | undefined,
+  ready: boolean,
+  layout: unknown,
+): () => void {
+  const pending = useRef(page && page > 1 ? page : 0);
+
+  // Stable across renders (the renderer's callbacks depend on it); reads refs only when called.
+  const [align] = useState(() => () => {
+    const el = scroller.current;
+    const box = pages.current[pending.current - 1];
+    if (el && box && pending.current) el.scrollTo({ top: box.offsetTop - 12 });
+  });
+
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const stop = () => (pending.current = 0);
+    el.addEventListener("wheel", stop, { passive: true });
+    el.addEventListener("touchstart", stop, { passive: true });
+    el.addEventListener("pointerdown", stop);
+    el.addEventListener("keydown", stop);
+    return () => {
+      el.removeEventListener("wheel", stop);
+      el.removeEventListener("touchstart", stop);
+      el.removeEventListener("pointerdown", stop);
+      el.removeEventListener("keydown", stop);
+    };
+  }, [scroller]);
+
+  useEffect(() => {
+    if (ready) align();
+  }, [ready, layout, align]);
+
+  return align;
 }

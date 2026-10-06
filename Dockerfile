@@ -22,8 +22,10 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
-# ddjvu: DjVu → PDF copies; mutool (MuPDF): page images for scans pdf.js can't render.
-RUN apk add --no-cache djvulibre mupdf-tools && mkdir -p /data/storage && chown node:node /data/storage
+# ddjvu: DjVu → PDF copies; mutool (MuPDF): page images for scans pdf.js can't render and
+# text for search; tesseract: OCR of scans and photos (Russian + English).
+RUN apk add --no-cache djvulibre mupdf-tools tesseract-ocr tesseract-ocr-data-rus tesseract-ocr-data-eng \
+    && mkdir -p /data/storage && chown node:node /data/storage
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public

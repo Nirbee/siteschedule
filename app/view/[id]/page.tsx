@@ -17,7 +17,7 @@ import { objectPath } from "@/lib/storage/disk";
 import { mutoolAvailable } from "@/lib/storage/page-render";
 
 type Params = { id: string };
-type Search = { entry?: string };
+type Search = { entry?: string; page?: string };
 
 const MAX_TEXT_BYTES = 2 * 1024 * 1024;
 const IMAGE_EXT = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
@@ -42,6 +42,8 @@ export default async function ViewPage({
   const [{ id }, search] = await Promise.all([params, searchParams]);
   const item = await load(id);
   if (!item) notFound();
+  const page = Number(search.page);
+  const initialPage = Number.isInteger(page) && page > 1 ? page : undefined;
   const subject = item.subjectId ? await getSubject(item.subjectId) : undefined;
   const ext = extensionOf(item.fileName);
   const back = (
@@ -69,11 +71,11 @@ export default async function ViewPage({
       </div>
     );
   } else if (ext === "pdf") {
-    body = await documentViewer(item, "original");
+    body = await documentViewer(item, "original", initialPage);
   } else if (needsViewCopy(item.fileName)) {
     body =
       item.viewStatus === "ready" ? (
-        await documentViewer(item, "copy")
+        await documentViewer(item, "copy", initialPage)
       ) : item.viewStatus === "pending" ? (
         <Preparing />
       ) : (
@@ -161,6 +163,7 @@ export default async function ViewPage({
 async function documentViewer(
   item: NonNullable<Awaited<ReturnType<typeof getServableMedia>>>,
   source: "original" | "copy",
+  initialPage: number | undefined,
 ) {
   const info = await pdfViewInfo(item, source);
   if (info.serverPages && info.pageCount && (await mutoolAvailable())) {
@@ -169,10 +172,16 @@ async function documentViewer(
         mediaId={item.id}
         fromViewCopy={source === "copy"}
         pageCount={info.pageCount}
+        initialPage={initialPage}
       />
     );
   }
-  return <PdfViewer url={source === "copy" ? `/media/${item.id}/view` : `/media/${item.id}`} />;
+  return (
+    <PdfViewer
+      url={source === "copy" ? `/media/${item.id}/view` : `/media/${item.id}`}
+      initialPage={initialPage}
+    />
+  );
 }
 
 function NotViewable({ text }: { text: string }) {

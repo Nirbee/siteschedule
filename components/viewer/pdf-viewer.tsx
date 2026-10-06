@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
-import { ZoomBar } from "./zoom-bar";
+import { ZoomBar, useJumpToPage } from "./zoom-bar";
 
 const ASSETS = "/vendor/pdfjs";
 /** Pages kept rendered around the screen, in screens above/below. */
@@ -16,7 +16,7 @@ const KEEP_SCREENS = 2;
  * - pages far from the screen release their bitmaps;
  * - the file is read with Range requests, so a 400-page book is not downloaded up front.
  */
-export function PdfViewer({ url }: { url: string }) {
+export function PdfViewer({ url, initialPage }: { url: string; initialPage?: number }) {
   const scroller = useRef<HTMLDivElement>(null);
   const pages = useRef<(HTMLDivElement | null)[]>([]);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
@@ -26,6 +26,14 @@ export function PdfViewer({ url }: { url: string }) {
   const [zoom, setZoom] = useState(1);
   const [current, setCurrent] = useState(1);
   const width = Math.round(baseWidth * zoom);
+  // Declared before the renderer's effects, so it scrolls before the first render round.
+  const realign = useJumpToPage(
+    scroller,
+    pages,
+    initialPage,
+    !!doc && width > 0,
+    `${width}:${ratio}`,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +136,7 @@ export function PdfViewer({ url }: { url: string }) {
           if (box && gen === generation.current) {
             box.style.height = `${Math.round((width * base.height) / base.width)}px`;
             box.replaceChildren(canvas);
+            realign();
           }
         } catch {
           // broken page: leave it blank, don't retry forever
@@ -139,7 +148,7 @@ export function PdfViewer({ url }: { url: string }) {
       // Zoom/resize happened mid-render: continue with the new size.
       if (gen !== generation.current) queueMicrotask(() => latestUpdate.current());
     }
-  }, [doc, width]);
+  }, [doc, width, realign]);
 
   // Width/zoom changed: everything must be redrawn at the new size.
   useEffect(() => {

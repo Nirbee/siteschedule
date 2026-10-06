@@ -5,6 +5,7 @@ import {
   bigserial,
   boolean,
   check,
+  customType,
   date,
   foreignKey,
   index,
@@ -358,6 +359,8 @@ export const media = pgTable(
     // Scans pdf.js chokes on (CCITT/JBIG2 pages): shown as server-rendered page images.
     // null = not checked yet.
     serverPages: boolean(),
+    // Full-text search: none (nothing to index) | pending | ready | failed.
+    textStatus: text().notNull().default("none"),
     mime: text().notNull(),
     sizeBytes: integer().notNull(),
     width: integer(),
@@ -400,6 +403,13 @@ export const media = pgTable(
       .on(t.tgChatId, t.tgMessageId)
       .where(sql`${t.tgMessageId} is not null`),
     check(
+      "media_text_status_check",
+      sql`${t.textStatus} in ('none', 'pending', 'ready', 'failed')`,
+    ),
+    index("media_text_pending")
+      .on(t.createdAt)
+      .where(sql`${t.textStatus} = 'pending' and ${t.deletedAt} is null`),
+    check(
       "media_view_status_check",
       sql`${t.viewStatus} in ('none', 'pending', 'ready', 'failed')`,
     ),
@@ -408,6 +418,28 @@ export const media = pgTable(
       .where(sql`${t.viewStatus} = 'pending' and ${t.deletedAt} is null`),
     check("media_sorted_has_subject", sql`${t.status} = 'unsorted' or ${t.subjectId} is not null`),
     check("media_lesson_has_subject", sql`${t.lessonNoteId} is null or ${t.subjectId} is not null`),
+  ],
+);
+
+/** Postgres tsvector (only used through SQL). */
+const tsvector = customType<{ data: string }>({ dataType: () => "tsvector" });
+
+// Text of every page of a document (or of a photo), for full-text search.
+export const mediaPages = pgTable(
+  "media_pages",
+  {
+    mediaId: uuid()
+      .notNull()
+      .references(() => media.id, { onDelete: "cascade" }),
+    page: integer().notNull(), // 1-based; photos have one page
+    text: text().notNull(),
+    source: text().notNull(), // "text" (from the file) | "ocr"
+    // Russian config also stems Latin words with the English stemmer.
+    tsv: tsvector().generatedAlwaysAs(sql`to_tsvector('russian', text)`),
+  },
+  (t) => [
+    primaryKey({ columns: [t.mediaId, t.page] }),
+    index("media_pages_tsv").using("gin", t.tsv),
   ],
 );
 

@@ -1,19 +1,27 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
+import { SearchResults } from "@/components/library/search-results";
 import { UploadSheet } from "@/components/library/upload-sheet";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireMember } from "@/lib/auth/current";
 import { plural } from "@/lib/schedule/format";
 import { getUploadOptions, listSubjectsWithCounts } from "@/lib/services/library";
+import { normalizeQuery, searchLibrary } from "@/lib/services/search";
 
 export const metadata: Metadata = { title: "Конспекты" };
 
-export default async function LibraryPage() {
-  const { user } = await requireMember();
-  const [subjects, upload] = await Promise.all([
-    listSubjectsWithCounts(),
+export default async function LibraryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const [{ user }, search] = await Promise.all([requireMember(), searchParams]);
+  const q = normalizeQuery(search.q ?? "");
+  const [subjects, upload, found] = await Promise.all([
+    q ? [] : listSubjectsWithCounts(),
     getUploadOptions(user.groupId!),
+    q ? searchLibrary(q) : null,
   ]);
 
   return (
@@ -25,7 +33,31 @@ export default async function LibraryPage() {
         </div>
       </div>
 
-      {subjects.length === 0 ? (
+      <form
+        action="/library"
+        role="search"
+        className="flex items-center gap-2 rounded-field border border-line-strong bg-surface px-3"
+      >
+        <Search size={18} className="shrink-0 text-muted" aria-hidden />
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Найти в конспектах, книгах и фото"
+          aria-label="Поиск по тексту файлов"
+          enterKeyHint="search"
+          className="h-11 min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none"
+        />
+        {q ? (
+          <Link href="/library" className="shrink-0 px-1 text-[14px] font-semibold">
+            Сбросить
+          </Link>
+        ) : null}
+      </form>
+
+      {found ? (
+        <SearchResults q={q} response={found} />
+      ) : subjects.length === 0 ? (
         <p className="text-muted">Дисциплины появятся, когда староста заполнит расписание.</p>
       ) : (
         <ul className="grid gap-2 md:grid-cols-2 md:gap-3 xl:grid-cols-3">

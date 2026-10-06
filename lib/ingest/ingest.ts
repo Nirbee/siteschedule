@@ -11,6 +11,7 @@ import { heavyJob } from "./limit";
 import { kickViewCopies, needsViewCopy } from "./convert";
 import { isFaxScan, pdfPageCount } from "./pdf";
 import { processPhoto } from "./photo";
+import { isTextIndexable, kickTextIndex } from "./text-index";
 
 export type IngestTarget =
   | {
@@ -115,6 +116,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
         sizeBytes: photo.full.length,
         width: photo.width,
         height: photo.height,
+        textStatus: "pending",
       };
     } else {
       const pageCount =
@@ -129,6 +131,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
         pageCount,
         serverPages: detected.extension === "pdf" ? isFaxScan(input.bytes) : null,
         viewStatus: needsViewCopy(fileName) ? "pending" : "none",
+        textStatus: isTextIndexable(fileName) ? "pending" : "none",
         mime: detected.mime,
         sizeBytes: input.bytes.length,
       };
@@ -157,6 +160,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
       })
       .returning({ id: media.id });
     if (row.viewStatus === "pending") kickViewCopies();
+    else if (row.textStatus === "pending") kickTextIndex();
     return { status: "created", mediaId: created!.id, kind: detected.kind, lessonNoteId };
   } catch (error) {
     await Promise.all(written.map((key) => deleteObject(key)));

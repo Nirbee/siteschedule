@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PAGE_WIDTHS } from "@/lib/storage/page-render-widths";
-import { ZoomBar, pageAtScroll } from "./zoom-bar";
+import { ZoomBar, pageAtScroll, useJumpToPage } from "./zoom-bar";
 
 /**
  * Viewer for scanned books: pages are rendered on the server (MuPDF) and shown as images.
@@ -13,11 +13,13 @@ export function PageImagesViewer({
   mediaId,
   fromViewCopy,
   pageCount,
+  initialPage,
 }: {
   mediaId: string;
   /** Office/DjVu files: render the PDF copy, not the original. */
   fromViewCopy: boolean;
   pageCount: number;
+  initialPage?: number;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const pages = useRef<(HTMLDivElement | null)[]>([]);
@@ -26,6 +28,7 @@ export function PageImagesViewer({
   const [ratio, setRatio] = useState(1.414);
   const [current, setCurrent] = useState(1);
   const width = Math.round(baseWidth * zoom);
+  const realign = useJumpToPage(scroller, pages, initialPage, width > 0, `${width}:${ratio}`);
 
   useEffect(() => {
     const el = scroller.current;
@@ -72,6 +75,7 @@ export function PageImagesViewer({
                     const pageRatio = img.naturalHeight / img.naturalWidth;
                     if (i === 0) setRatio(pageRatio);
                     img.parentElement!.style.height = `${Math.round(width * pageRatio)}px`;
+                    realign();
                   }}
                 />
               </div>
