@@ -13,6 +13,7 @@ import { objectPath } from "@/lib/storage/disk";
 import { needsViewCopy } from "./convert";
 import { extensionOf } from "./detect";
 import { heavyJob } from "./limit";
+import { stripRepeatedLines, textFromTsv } from "./ocr-layout";
 import { decodeText } from "./text";
 
 /** Pages with fewer letters than this are treated as scans and OCR'd. */
@@ -48,27 +49,33 @@ function run(command: string, args: string[], env?: Record<string, string>): Pro
   });
 }
 
-/** Collapses whitespace and joins words hyphenated across lines («вари-\nанте» → «варианте»). */
+/**
+ * Joins words hyphenated across lines («вари-\nанте» → «варианте»), collapses spaces and drops
+ * empty lines. Line breaks are kept: running heads are recognised by lines (ocr-layout.ts).
+ */
 export function cleanText(raw: string): string {
   return raw
-    .replace(/(\p{L})-\s*\n\s*(\p{L})/gu, "$1$2")
-    .replace(/\s+/g, " ")
-    .trim()
+    .replace(/(\p{L})-[ \t]*\r?\n\s*(\p{L})/gu, "$1$2")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join("\n")
     .slice(0, MAX_PAGE_CHARS);
 }
 
 const letters = (text: string) => (text.match(/\p{L}/gu) ?? []).length;
 
-async function ocrImage(png: Buffer): Promise<string> {
+/** OCR with layout: sideways running heads (and, for book pages, margin marks) are dropped. */
+async function ocrImage(png: Buffer, { dropMargins }: { dropMargins: boolean }): Promise<string> {
   const dir = await mkdtemp(path.join(tmpdir(), "para-ocr-"));
   try {
     const file = path.join(dir, "page.png");
     await writeFile(file, png);
     // One thread per job: the server has two cores and also serves the site.
-    const out = await run("tesseract", [file, "-", "-l", "rus+eng", "--psm", "3"], {
+    const out = await run("tesseract", [file, "-", "-l", "rus+eng", "--psm", "3", "tsv"], {
       OMP_THREAD_LIMIT: "1",
     });
-    return out.toString("utf8");
+    return textFromTsv(out.toString("utf8"), { dropMargins });
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -96,7 +103,7 @@ async function pdfPageText(
     pdfPath,
     String(page),
   ]);
-  return { text: cleanText(await ocrImage(png)), source: "ocr" };
+  return { text: cleanText(await ocrImage(png, { dropMargins: true })), source: "ocr" };
 }
 
 /** Page count without loading the file: `mutool show` reads just the page tree root. */
@@ -115,7 +122,7 @@ async function storePage(mediaId: string, page: number, text: string, source: "t
 export async function indexMedia(item: typeof media.$inferSelect): Promise<void> {
   if (item.kind === "photo") {
     const png = await sharp(objectPath(item.storageKey)).png().toBuffer();
-    const text = cleanText(await heavyJob(() => ocrImage(png)));
+    const text = cleanText(await heavyJob(() => ocrImage(png, { dropMargins: false })));
     await storePage(item.id, 1, text, "ocr");
     return;
   }
@@ -148,6 +155,24 @@ export async function indexMedia(item: typeof media.$inferSelect): Promise<void>
       .from(media)
       .where(eq(media.id, item.id));
     if (!still || still.deletedAt) return;
+  }
+  await stripRunningHeads(item.id);
+}
+
+/** Once a document is fully indexed: removes lines repeated at the top/bottom of many pages. */
+export async function stripRunningHeads(mediaId: string): Promise<void> {
+  const pages = await db()
+    .select({ page: mediaPages.page, text: mediaPages.text })
+    .from(mediaPages)
+    .where(eq(mediaPages.mediaId, mediaId))
+    .orderBy(asc(mediaPages.page));
+  const cleaned = stripRepeatedLines(pages.map((p) => p.text));
+  for (const [i, { page, text }] of pages.entries()) {
+    if (cleaned[i] === text) continue;
+    await db()
+      .update(mediaPages)
+      .set({ text: cleaned[i]! })
+      .where(and(eq(mediaPages.mediaId, mediaId), eq(mediaPages.page, page)));
   }
 }
 

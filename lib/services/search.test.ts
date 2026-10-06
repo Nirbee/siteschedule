@@ -49,9 +49,9 @@ async function upload(subjectId: string, fileName: string, text: string) {
 }
 
 describe("text index", () => {
-  it("joins hyphenated words and collapses whitespace", () => {
+  it("joins hyphenated words, collapses spaces, keeps lines", () => {
     expect(cleanText("в этом вари-\n  анте   данные\n\nи  всё")).toBe(
-      "в этом варианте данные и всё",
+      "в этом варианте данные\nи всё",
     );
   });
 
@@ -69,7 +69,7 @@ describe("text index", () => {
     expect(after!.textStatus).toBe("ready");
     const pages = await db.select().from(mediaPages).where(eq(mediaPages.mediaId, id));
     expect(pages).toMatchObject([
-      { page: 1, source: "text", text: "Проклятие размерности и метод главных компонент" },
+      { page: 1, source: "text", text: "Проклятие размерности и\nметод главных компонент" },
     ]);
   });
 

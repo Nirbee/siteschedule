@@ -43,6 +43,13 @@
       "when": 1791296517718,
       "tag": "0005_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791300496950,
+      "tag": "0006_reindex_text",
+      "breakpoints": true
     }
   ]
 }
