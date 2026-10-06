@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { readFile } from "node:fs/promises";
 import { ArrowLeft, Download, FileText, Folder } from "lucide-react";
 import { displayName, formatBytes } from "@/components/library/format";
+import { PageImagesViewer } from "@/components/viewer/page-images-viewer";
 import { PdfViewer } from "@/components/viewer/pdf-viewer";
 import { Preparing } from "@/components/viewer/preparing";
 import { requireMember } from "@/lib/auth/current";
@@ -11,8 +12,9 @@ import { needsViewCopy } from "@/lib/ingest/convert";
 import { extensionOf } from "@/lib/ingest/detect";
 import { decodeText, parseCsv } from "@/lib/ingest/text";
 import { isJunkEntry, listZip, readZipEntry, type ZipEntry } from "@/lib/ingest/zip";
-import { getServableMedia, getSubject } from "@/lib/services/library";
+import { getServableMedia, getSubject, pdfViewInfo } from "@/lib/services/library";
 import { objectPath } from "@/lib/storage/disk";
+import { mutoolAvailable } from "@/lib/storage/page-render";
 
 type Params = { id: string };
 type Search = { entry?: string };
@@ -67,11 +69,11 @@ export default async function ViewPage({
       </div>
     );
   } else if (ext === "pdf") {
-    body = <PdfViewer url={`/media/${item.id}`} />;
+    body = await documentViewer(item, "original");
   } else if (needsViewCopy(item.fileName)) {
     body =
       item.viewStatus === "ready" ? (
-        <PdfViewer url={`/media/${item.id}/view`} />
+        await documentViewer(item, "copy")
       ) : item.viewStatus === "pending" ? (
         <Preparing />
       ) : (
@@ -153,6 +155,24 @@ export default async function ViewPage({
       {body}
     </div>
   );
+}
+
+/** Scans pdf.js can't handle are shown as server-rendered pages (when MuPDF is installed). */
+async function documentViewer(
+  item: NonNullable<Awaited<ReturnType<typeof getServableMedia>>>,
+  source: "original" | "copy",
+) {
+  const info = await pdfViewInfo(item, source);
+  if (info.serverPages && info.pageCount && (await mutoolAvailable())) {
+    return (
+      <PageImagesViewer
+        mediaId={item.id}
+        fromViewCopy={source === "copy"}
+        pageCount={info.pageCount}
+      />
+    );
+  }
+  return <PdfViewer url={source === "copy" ? `/media/${item.id}/view` : `/media/${item.id}`} />;
 }
 
 function NotViewable({ text }: { text: string }) {

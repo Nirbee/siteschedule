@@ -11,3 +11,12 @@ export async function pdfPageCount(bytes: Uint8Array): Promise<number | null> {
     return null; // broken or unusual PDF — still stored, just without a page count
   }
 }
+
+/**
+ * Scanned books whose page images are CCITT (fax) or JBIG2 encoded. pdf.js renders some of
+ * them extremely slowly or not at all, so the server renders their pages with MuPDF instead.
+ */
+export function isFaxScan(bytes: Uint8Array): boolean {
+  const buf = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return buf.includes("/CCITTFaxDecode") || buf.includes("/JBIG2Decode");
+}

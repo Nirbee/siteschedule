@@ -22,8 +22,8 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
-# ddjvu turns DjVu books into PDF copies for the in-site viewer.
-RUN apk add --no-cache djvulibre && mkdir -p /data/storage && chown node:node /data/storage
+# ddjvu: DjVu → PDF copies; mutool (MuPDF): page images for scans pdf.js can't render.
+RUN apk add --no-cache djvulibre mupdf-tools && mkdir -p /data/storage && chown node:node /data/storage
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public

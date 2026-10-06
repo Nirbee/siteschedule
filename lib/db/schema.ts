@@ -355,6 +355,9 @@ export const media = pgTable(
     // PDF copy for in-site viewing of Office/DjVu files (created in the background).
     viewKey: text(),
     viewStatus: text().notNull().default("none"),
+    // Scans pdf.js chokes on (CCITT/JBIG2 pages): shown as server-rendered page images.
+    // null = not checked yet.
+    serverPages: boolean(),
     mime: text().notNull(),
     sizeBytes: integer().notNull(),
     width: integer(),

@@ -5,7 +5,10 @@ import { auditLog, lessonNotes, media, subjects, users } from "@/lib/db/schema";
 import type { IsoDate } from "@/lib/schedule/dates";
 import { shortTime } from "@/lib/schedule/dates";
 import type { LessonKind } from "@/lib/schedule/types";
+import { readFile } from "node:fs/promises";
+import { isFaxScan, pdfPageCount } from "@/lib/ingest/pdf";
 import { uploadLessons } from "@/lib/ingest/targets";
+import { objectPath } from "@/lib/storage/disk";
 import { todayInMoscow } from "@/lib/schedule/dates";
 import { nowInMoscow } from "@/lib/time";
 import { getCurrentSemester, loadScheduleData } from "./schedule";
@@ -277,4 +280,26 @@ export async function getUploadOptions(groupId: string) {
       .map((s) => ({ id: s.id, name: s.name })),
     defaultLessonKey: defaultKey,
   };
+}
+
+/**
+ * How to show a PDF (or the PDF copy of an Office/DjVu file): page count and whether pages
+ * must be rendered on the server. Files uploaded before these fields existed are checked once.
+ */
+export async function pdfViewInfo(
+  item: typeof media.$inferSelect,
+  source: "original" | "copy",
+): Promise<{ pageCount: number | null; serverPages: boolean }> {
+  if (item.serverPages !== null && item.pageCount !== null) {
+    return { pageCount: item.pageCount, serverPages: item.serverPages };
+  }
+  const key = source === "copy" ? item.viewKey : item.storageKey;
+  if (!key) return { pageCount: item.pageCount, serverPages: false };
+  const bytes = await readFile(objectPath(key));
+  const info = {
+    pageCount: item.pageCount ?? (await pdfPageCount(bytes)),
+    serverPages: isFaxScan(bytes),
+  };
+  await db().update(media).set(info).where(eq(media.id, item.id));
+  return info;
 }

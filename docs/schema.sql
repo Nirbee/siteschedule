@@ -234,6 +234,7 @@ create table media (
   page_count          int,                        -- число страниц (PDF)
   view_key            text,                       -- PDF-копия для просмотра (Office, DjVu)
   view_status         text not null default 'none', -- none | pending | ready | failed
+  server_pages        boolean,                    -- скан (CCITT/JBIG2): страницы рисует сервер (MuPDF); null — не проверено
   mime                text not null,
   size_bytes          int not null,
   width               int,

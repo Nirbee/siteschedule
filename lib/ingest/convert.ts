@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
 import { objectPath, writeObject } from "@/lib/storage/disk";
 import { extensionOf } from "./detect";
 import { heavyJob } from "./limit";
+import { isFaxScan, pdfPageCount } from "./pdf";
 
 const OFFICE = new Set(["doc", "docx", "ppt", "pptx", "xls", "xlsx", "odt", "odp", "ods", "rtf"]);
 
@@ -70,7 +71,16 @@ export async function createViewCopy(item: typeof media.$inferSelect): Promise<v
       : await officeToPdf(await readFile(objectPath(item.storageKey)), item.fileName);
   const key = `${item.storageKey.replace(/\.[^./]+$/, "")}.view.pdf`;
   await writeObject(key, pdf);
-  await db().update(media).set({ viewKey: key, viewStatus: "ready" }).where(eq(media.id, item.id));
+  await db()
+    .update(media)
+    .set({
+      viewKey: key,
+      viewStatus: "ready",
+      // For Office/DjVu files these describe the PDF copy the viewer shows.
+      pageCount: await pdfPageCount(pdf),
+      serverPages: isFaxScan(pdf),
+    })
+    .where(eq(media.id, item.id));
 }
 
 let running = false;

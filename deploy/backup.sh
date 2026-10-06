@@ -8,7 +8,7 @@ mkdir -p "$DEST"
 
 docker compose exec -T postgres pg_dump -U para -d para --format=custom > "$DEST/db-$STAMP.dump"
 docker run --rm -v para_storage:/data:ro -v "$DEST":/backup alpine \
-  tar -czf "/backup/storage-$STAMP.tar.gz" -C /data .
+  tar -czf "/backup/storage-$STAMP.tar.gz" --exclude=./cache -C /data .
 
 find "$DEST" -type f -mtime +14 -delete
 echo "Backup done: $DEST/db-$STAMP.dump"

@@ -146,7 +146,7 @@ interface ResolvedLesson {
 
 **Импорт из экспорта Telegram Desktop:** `pnpm import:tg <папка экспорта> --chat-id <id>` читает `result.json` и прогоняет сообщения с фото/файлами через тот же пайплайн (`source = tg_import`). Как в экспорте форума обозначен топик — проверим на реальном экспорте; сообщения из «Флуда» и топиков чужих групп пропускаются.
 
-**Просмотр на сайте:** для Office/DjVu `media.view_status`: `none → pending → ready | failed`. Копия делается в фоне (`lib/ingest/convert.ts`): Office — через Gotenberg (LibreOffice, `GOTENBERG_URL`), DjVu — `ddjvu` в образе; ключ `<storage_key без расширения>.view.pdf`. Очередь дорабатывается при старте сервера и раз в 5 минут (`instrumentation.ts`); без конвертера (локально) файлы остаются `pending`. Файлы отдаются с поддержкой HTTP Range — pdf.js читает большие книги по частям.
+**Просмотр на сайте:** для Office/DjVu `media.view_status`: `none → pending → ready | failed`. Копия делается в фоне (`lib/ingest/convert.ts`): Office — через Gotenberg (LibreOffice, `GOTENBERG_URL`), DjVu — `ddjvu` в образе; ключ `<storage_key без расширения>.view.pdf`. Очередь дорабатывается при старте сервера и раз в 5 минут (`instrumentation.ts`); без конвертера (локально) файлы остаются `pending`. Файлы отдаются с поддержкой HTTP Range — pdf.js читает большие книги по частям. Сканы с картинками страниц в CCITT/JBIG2 (`media.server_pages`; pdf.js на них зависает) показываются картинками: сервер рисует страницу через MuPDF (`/media/<id>/page/<n>?w=800|1200|1800|2400[&src=view]`) и кэширует webp в `STORAGE_DIR/cache/pages` (в бэкап не входит). Без `mutool` (локально) — откат на pdf.js.
 
 **Хранилище** (`lib/storage/`, локальный диск, корень `STORAGE_DIR`):
 

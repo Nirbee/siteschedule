@@ -9,7 +9,7 @@ import { deleteObject, newKey, writeObject } from "@/lib/storage/disk";
 import { detectUpload, safeFileName } from "./detect";
 import { heavyJob } from "./limit";
 import { kickViewCopies, needsViewCopy } from "./convert";
-import { pdfPageCount } from "./pdf";
+import { isFaxScan, pdfPageCount } from "./pdf";
 import { processPhoto } from "./photo";
 
 export type IngestTarget =
@@ -127,6 +127,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
         storageKey: key,
         fileName,
         pageCount,
+        serverPages: detected.extension === "pdf" ? isFaxScan(input.bytes) : null,
         viewStatus: needsViewCopy(fileName) ? "pending" : "none",
         mime: detected.mime,
         sizeBytes: input.bytes.length,
