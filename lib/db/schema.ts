@@ -255,10 +255,50 @@ export const controlEvents = pgTable("control_events", {
   endsAt: time(),
   form: text().notNull(),
   room: text(),
+  topics: text(), // «что будет»: one item per line
+  rules: text(), // «можно / нельзя»: notes allowed, phones handed in…
   admission: text(),
   createdBy: uuid().references(() => users.id),
   createdAt: createdAt(),
+  updatedAt: timestamptz(),
 });
+
+// Homework: due by a lesson of the subject (slot or custom time) or just by a date.
+export const assignments = pgTable(
+  "assignments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    subjectId: uuid()
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    dueDate: date({ mode: "string" }).notNull(),
+    dueSlotN: smallint().references(() => timeSlots.n),
+    dueStartsAt: time(),
+    body: text().notNull(), // one item per line
+    createdBy: uuid().references(() => users.id),
+    createdAt: createdAt(),
+    updatedAt: timestamptz(),
+  },
+  (t) => [
+    index("assignments_due").on(t.dueDate),
+    check("assignments_due_time_check", sql`${t.dueSlotN} is null or ${t.dueStartsAt} is null`),
+  ],
+);
+
+/** Personal «сделано» marks; only the student sees their own. */
+export const assignmentDone = pgTable(
+  "assignment_done",
+  {
+    assignmentId: uuid()
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    doneAt: timestamptz().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.assignmentId, t.userId] })],
+);
 
 // Topics ----------------------------------------------------------------------
 export const topicLists = pgTable(
@@ -440,6 +480,36 @@ export const mediaPages = pgTable(
   (t) => [
     primaryKey({ columns: [t.mediaId, t.page] }),
     index("media_pages_tsv").using("gin", t.tsv),
+  ],
+);
+
+// Materials attached to a homework or a control event: a library file (optionally a page),
+// a lesson's notes, or an outside link.
+export const taskMaterials = pgTable(
+  "task_materials",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    assignmentId: uuid().references(() => assignments.id, { onDelete: "cascade" }),
+    controlEventId: uuid().references(() => controlEvents.id, { onDelete: "cascade" }),
+    mediaId: uuid().references(() => media.id, { onDelete: "cascade" }),
+    lessonNoteId: uuid().references(() => lessonNotes.id, { onDelete: "cascade" }),
+    page: integer(),
+    url: text(),
+    title: text(),
+    sort: integer().notNull().default(0),
+  },
+  (t) => [
+    index("task_materials_assignment").on(t.assignmentId),
+    index("task_materials_control_event").on(t.controlEventId),
+    check(
+      "task_materials_owner_check",
+      sql`num_nonnulls(${t.assignmentId}, ${t.controlEventId}) = 1`,
+    ),
+    check(
+      "task_materials_target_check",
+      sql`num_nonnulls(${t.mediaId}, ${t.lessonNoteId}, ${t.url}) = 1`,
+    ),
+    check("task_materials_page_check", sql`${t.page} is null or ${t.page} >= 1`),
   ],
 );
 

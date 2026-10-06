@@ -165,11 +165,37 @@ create table control_events (
   slot_n      smallint references time_slots(n),
   starts_at   time,                               -- если не по сетке
   ends_at     time,
-  form        text not null,                      -- «Письменная работа», «Тест»...
+  form        text not null,                      -- «Контрольная работа», «Тест»...
   room        text,
+  topics      text,                               -- «что будет», пункт на строку
+  rules       text,                               -- «можно / нельзя»
   admission   text,                               -- условия допуска
   created_by  uuid references users(id),
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz
+);
+
+-- Домашнее задание: к паре (слот или время «не по сетке») или просто к дате ----
+create table assignments (
+  id             uuid primary key default gen_random_uuid(),
+  subject_id     uuid not null references subjects(id) on delete cascade,
+  due_date       date not null,
+  due_slot_n     smallint references time_slots(n),
+  due_starts_at  time,                            -- пара не по сетке
+  body           text not null,                   -- пункт на строку
+  created_by     uuid references users(id),
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz,
+  check (due_slot_n is null or due_starts_at is null)
+);
+create index assignments_due on assignments (due_date);
+
+-- Личные отметки «сделано» (видит только сам студент)
+create table assignment_done (
+  assignment_id  uuid not null references assignments(id) on delete cascade,
+  user_id        uuid not null references users(id) on delete cascade,
+  done_at        timestamptz not null default now(),
+  primary key (assignment_id, user_id)
 );
 
 -- Темы ------------------------------------------------------------------------
@@ -263,6 +289,22 @@ create table media (
   deleted_at          timestamptz,
   check (status = 'unsorted' or subject_id is not null),
   check (lesson_note_id is null or subject_id is not null)
+);
+
+-- Материалы к заданию или контрольной: файл библиотеки (можно со страницей),
+-- конспект занятия или внешняя ссылка
+create table task_materials (
+  id                uuid primary key default gen_random_uuid(),
+  assignment_id     uuid references assignments(id) on delete cascade,
+  control_event_id  uuid references control_events(id) on delete cascade,
+  media_id          uuid references media(id) on delete cascade,
+  lesson_note_id    uuid references lesson_notes(id) on delete cascade,
+  page              int check (page is null or page >= 1),
+  url               text,
+  title             text,
+  sort              int not null default 0,
+  check (num_nonnulls(assignment_id, control_event_id) = 1),
+  check (num_nonnulls(media_id, lesson_note_id, url) = 1)
 );
 
 -- Текст страниц для поиска: слой текста PDF (MuPDF) или OCR (Tesseract, rus+eng) для сканов и фото.

@@ -11,6 +11,8 @@ import { PARITY_LABELS, weekInfo } from "@/lib/schedule/week";
 import { lessonKey } from "@/lib/ingest/targets";
 import { noteCounts } from "@/lib/services/library";
 import { loadScheduleData } from "@/lib/services/schedule";
+import { tasksFeed } from "@/lib/services/tasks";
+import { tasksOfDay } from "@/lib/tasks/place";
 
 export const metadata: Metadata = { title: "Расписание" };
 
@@ -33,7 +35,10 @@ export default async function WeekPage({
   }
 
   const week = resolveWeek(data, monday, user.groupId!);
-  const notes = await noteCounts(monday, addDays(monday, 6));
+  const [notes, feed] = await Promise.all([
+    noteCounts(monday, addDays(monday, 6)),
+    tasksFeed(user.id, user.groupId!, data, { from: monday, to: addDays(monday, 6) }),
+  ]);
   const notesFor = (l: (typeof week)[number]["lessons"][number]) =>
     l.status === "cancelled" || l.status === "moved_out"
       ? undefined
@@ -80,6 +85,7 @@ export default async function WeekPage({
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {days.map(({ date, lessons }) => {
+          const dayTasks = tasksOfDay(lessons, date, feed.assignments, feed.controls);
           return (
             <section key={date} aria-label={dayMonth(date)} className="flex flex-col gap-2">
               <Link
@@ -94,16 +100,34 @@ export default async function WeekPage({
                 <span className="font-bold">{dayMonth(date)}</span>
                 {date === today ? <span className="text-[13px] font-bold">· сегодня</span> : null}
               </Link>
+              {dayTasks.dayLevel.controls.length || dayTasks.dayLevel.assignments.length ? (
+                <TaskMarks
+                  date={date}
+                  controls={dayTasks.dayLevel.controls.map((c) => `${c.form} · ${c.subjectName}`)}
+                  homework={dayTasks.dayLevel.assignments.length}
+                />
+              ) : null}
               {lessons.length ? (
-                lessons.map((lesson, i) => (
-                  <LessonCard
-                    key={`${lesson.entryId ?? lesson.changeId}-${i}`}
-                    lesson={lesson}
-                    notes={notesFor(lesson)}
-                    compact
-                    showConflict={staff}
-                  />
-                ))
+                lessons.map((lesson, i) => {
+                  const own = dayTasks.byLesson.get(i);
+                  return (
+                    <LessonCard
+                      key={`${lesson.entryId ?? lesson.changeId}-${i}`}
+                      lesson={lesson}
+                      notes={notesFor(lesson)}
+                      compact
+                      showConflict={staff}
+                    >
+                      {own ? (
+                        <TaskMarks
+                          date={date}
+                          controls={own.controls.map((c) => c.form)}
+                          homework={own.assignments.length}
+                        />
+                      ) : null}
+                    </LessonCard>
+                  );
+                })
               ) : (
                 <p className="rounded-card border border-dashed border-line p-3 text-[14px] text-muted">
                   Пар нет
@@ -114,5 +138,34 @@ export default async function WeekPage({
         })}
       </div>
     </div>
+  );
+}
+
+/** Small «Задание» / «Контрольная» marks; the day page shows the details. */
+function TaskMarks({
+  date,
+  controls,
+  homework,
+}: {
+  date: string;
+  controls: string[];
+  homework: number;
+}) {
+  return (
+    <Link href={`/?date=${date}` as Route} className="mt-1.5 flex flex-wrap gap-1.5 no-underline">
+      {controls.map((label, i) => (
+        <span
+          key={i}
+          className="rounded-badge bg-emph px-1.5 py-0.5 text-[12px] font-bold text-on-emph"
+        >
+          {label}
+        </span>
+      ))}
+      {homework ? (
+        <span className="rounded-badge bg-chip px-1.5 py-0.5 text-[12px] font-bold text-ink-2">
+          {homework > 1 ? `Задания · ${homework}` : "Задание"}
+        </span>
+      ) : null}
+    </Link>
   );
 }

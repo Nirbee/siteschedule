@@ -27,6 +27,8 @@ interface Props {
   /** On a subject page: preselect that subject. */
   subjectId?: string;
   label?: string;
+  /** Secondary look inside forms, where another button is the main one. */
+  secondary?: boolean;
 }
 
 type Item = {
@@ -45,7 +47,14 @@ const field =
   "h-12 w-full rounded-field border border-line-strong bg-surface px-3 text-[15px] text-ink";
 const labelClass = "flex flex-col gap-1.5 text-[13px] font-bold text-ink-2";
 
-export function UploadSheet({ lessons, subjects, defaultLessonKey, subjectId, label }: Props) {
+export function UploadSheet({
+  lessons,
+  subjects,
+  defaultLessonKey,
+  subjectId,
+  label,
+  secondary = false,
+}: Props) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const subjectLessons = subjectId ? lessons.filter((l) => l.subjectId === subjectId) : lessons;
@@ -149,7 +158,7 @@ export function UploadSheet({ lessons, subjects, defaultLessonKey, subjectId, la
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}
-        className={buttonClass("primary")}
+        className={buttonClass(secondary ? "secondary" : "primary", secondary ? "self-start" : "")}
       >
         <Upload size={20} aria-hidden /> {label ?? "Загрузить"}
       </button>

@@ -21,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Сегодня", icon: Sun, mobile: true },
   { href: "/week", label: "Расписание", icon: CalendarDays, mobile: false },
   { href: "/topics", label: "Темы", icon: ListChecks, mobile: true },
-  { href: "/exams", label: "Рубежки", icon: ClipboardCheck, mobile: true },
+  { href: "/tasks", label: "Задания", icon: ClipboardCheck, mobile: true },
   { href: "/library", label: "Конспекты", icon: BookOpenText, mobile: true },
   { href: "/news", label: "Новости", icon: Megaphone, mobile: true },
 ];

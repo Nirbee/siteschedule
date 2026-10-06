@@ -1,7 +1,11 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowRight, Pencil } from "lucide-react";
+import { ArrowRight, Pencil, Plus } from "lucide-react";
 import { LessonCard } from "@/components/schedule/lesson-card";
+import { AssignmentCard } from "@/components/tasks/assignment-card";
+import { ControlCard } from "@/components/tasks/control-card";
+import { controlTime, dueTime } from "@/components/tasks/format";
+import { UpcomingList } from "@/components/tasks/upcoming-list";
 import { WeekStrip } from "@/components/schedule/week-strip";
 import { buttonClass } from "@/components/ui/button";
 import { isStaff, requireMember } from "@/lib/auth/current";
@@ -13,6 +17,9 @@ import { PARITY_LABELS, weekInfo } from "@/lib/schedule/week";
 import { lessonKey } from "@/lib/ingest/targets";
 import { noteCounts } from "@/lib/services/library";
 import { loadScheduleData } from "@/lib/services/schedule";
+import { tasksFeed } from "@/lib/services/tasks";
+import { isHappening } from "@/lib/schedule/resolve";
+import { tasksOfDay } from "@/lib/tasks/place";
 
 export default async function TodayPage({
   searchParams,
@@ -35,7 +42,13 @@ export default async function TodayPage({
 
   const monday = mondayOf(date);
   const week = resolveWeek(data, monday, groupId);
-  const notes = await noteCounts(monday, addDays(monday, 6));
+  const [notes, feed] = await Promise.all([
+    noteCounts(monday, addDays(monday, 6)),
+    tasksFeed(user.id, groupId, data, {
+      from: date < today ? date : today,
+      to: addDays(date > today ? date : today, UPCOMING_DAYS),
+    }),
+  ]);
   const notesFor = (l: (typeof week)[number]["lessons"][number]) =>
     l.status === "cancelled" || l.status === "moved_out"
       ? undefined
@@ -45,6 +58,17 @@ export default async function TodayPage({
   const lessons = week.find((d) => d.date === date)?.lessons ?? [];
   const info = weekInfo(data.semester, date);
   const summary = summarizeDay(lessons);
+  const tasks = tasksOfDay(lessons, date, feed.assignments, feed.controls);
+  // «Скоро»: next control events and unfinished homework after the shown day.
+  const upcoming =
+    date === today
+      ? {
+          controls: feed.controls.filter((c) => c.date > today),
+          assignments: feed.assignments.filter(
+            (a) => a.due.date > today && a.due.date <= addDays(today, 7) && !a.done,
+          ),
+        }
+      : null;
 
   const eyebrow =
     date === today ? "Сегодня" : date === addDays(today, 1) ? "Завтра" : weekdayName(date);
@@ -91,23 +115,91 @@ export default async function TodayPage({
 
       <WeekStrip days={week} selected={date} today={today} />
 
+      {tasks.dayLevel.controls.length || tasks.dayLevel.assignments.length ? (
+        <section aria-label="На этот день" className="flex flex-col gap-2">
+          <h2 className="eyebrow">На этот день</h2>
+          {tasks.dayLevel.controls.map((c) => (
+            <ControlCard key={c.id} event={c} when={controlTime(c, data.slots)} />
+          ))}
+          {tasks.dayLevel.assignments.map((a) => (
+            <AssignmentCard
+              key={a.id}
+              item={a}
+              when={dueTime(a.due, data.slots)}
+              moved={a.moved}
+              staff={staff}
+            />
+          ))}
+        </section>
+      ) : null}
+
       <section aria-label="Пары" className="flex flex-col gap-2 md:gap-3">
         {lessons.length ? (
-          lessons.map((lesson, i) => (
-            <LessonCard
-              key={`${lesson.entryId ?? lesson.changeId}-${i}`}
-              lesson={lesson}
-              notes={notesFor(lesson)}
-              showConflict={staff}
-            />
-          ))
+          lessons.map((lesson, i) => {
+            const own = tasks.byLesson.get(i);
+            const canAdd = staff && isHappening(lesson) && lesson.kind !== "self_study";
+            return (
+              <LessonCard
+                key={`${lesson.entryId ?? lesson.changeId}-${i}`}
+                lesson={lesson}
+                notes={notesFor(lesson)}
+                showConflict={staff}
+              >
+                {own || canAdd ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {own?.controls.map((c) => (
+                      <ControlCard
+                        key={c.id}
+                        event={c}
+                        when="на этой паре"
+                        showSubject={false}
+                        flat
+                      />
+                    ))}
+                    {own?.assignments.map((a) => (
+                      <AssignmentCard
+                        key={a.id}
+                        item={a}
+                        when="к этой паре"
+                        moved={a.moved}
+                        staff={staff}
+                        showSubject={false}
+                        flat
+                      />
+                    ))}
+                    {canAdd ? (
+                      <Link
+                        href={
+                          `/manage/tasks/new?type=assignment&subject=${lesson.subject.id}` as Route
+                        }
+                        className="inline-flex min-h-9 items-center gap-1 self-start text-[13px] font-semibold text-muted"
+                      >
+                        <Plus size={15} aria-hidden /> Задание к следующей паре
+                      </Link>
+                    ) : null}
+                  </div>
+                ) : null}
+              </LessonCard>
+            );
+          })
         ) : (
           <NoLessons data={data} date={date} groupId={groupId} />
         )}
       </section>
+
+      {upcoming ? (
+        <UpcomingList
+          today={today}
+          assignments={upcoming.assignments}
+          controls={upcoming.controls}
+        />
+      ) : null}
     </div>
   );
 }
+
+/** How far ahead «Скоро» looks for control events. */
+const UPCOMING_DAYS = 21;
 
 function NoLessons({ data, date, groupId }: { data: ScheduleData; date: string; groupId: string }) {
   let next: string | null = null;

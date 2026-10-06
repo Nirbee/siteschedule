@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import type { Route } from "next";
 import Link from "next/link";
-import { CalendarCog, History, Pencil, Users, type LucideIcon } from "lucide-react";
+import {
+  CalendarCog,
+  ClipboardCheck,
+  History,
+  NotebookPen,
+  Pencil,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonClass } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/current";
@@ -18,6 +26,18 @@ export default async function ManagePage() {
         <Link href="/manage/changes/new" className={buttonClass("primary", "w-full")}>
           <Pencil size={20} aria-hidden /> Изменить расписание
         </Link>
+        <Tile
+          href="/manage/tasks/new?type=assignment"
+          icon={NotebookPen}
+          title="Задание"
+          text="Что сделать к паре: прочитать, решить, рассказать у доски"
+        />
+        <Tile
+          href="/manage/tasks/new?type=control"
+          icon={ClipboardCheck}
+          title="Контрольная"
+          text="Дата, что будет, что можно, материалы для подготовки"
+        />
         <Tile
           href="/manage/changes"
           icon={History}

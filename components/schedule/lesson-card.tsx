@@ -17,12 +17,15 @@ export function LessonCard({
   compact = false,
   showConflict = false,
   notes,
+  children,
 }: {
   lesson: ResolvedLesson;
   compact?: boolean;
   showConflict?: boolean;
   /** Photos/files uploaded for this lesson, if any. */
   notes?: LessonNotesInfo;
+  /** Homework and control events of this lesson. */
+  children?: React.ReactNode;
 }) {
   if (lesson.kind === "self_study") return <SelfStudyCard lesson={lesson} compact={compact} />;
 
@@ -80,6 +83,7 @@ export function LessonCard({
             <TriangleAlert size={16} aria-hidden /> Пересекается по времени с другой парой
           </p>
         ) : null}
+        {children}
       </div>
     </article>
   );

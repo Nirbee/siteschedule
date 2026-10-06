@@ -35,7 +35,8 @@ type Parity = (typeof s.weekParity.enumValues)[number];
 async function main() {
   await db.transaction(async (tx) => {
     await tx.execute(sql`
-      truncate table audit_log, outbox, news, media, lesson_notes, topic_members, topics, topic_lists,
+      truncate table audit_log, outbox, news, task_materials, assignment_done, assignments, media,
+        lesson_notes, topic_members, topics, topic_lists,
         control_events, schedule_change_groups, schedule_changes, schedule_entry_groups,
         schedule_entries, subjects, time_slots, semesters, login_requests, sessions, users, groups
       restart identity cascade
@@ -261,6 +262,24 @@ async function main() {
       .values(
         changeRows.flatMap(({ id }) => [g11, g12].map((g) => ({ changeId: id, groupId: g.id }))),
       );
+
+    // Demo homework (Monday seminar of КП) and a control event two weeks ahead.
+    await tx.insert(s.assignments).values({
+      subjectId: subject("КП"),
+      dueDate: addDays(monday, 7),
+      dueSlotN: 7,
+      body: "Прочитать раздел о протоколах обмена ключами\nРешить задачи 1–3 из методички",
+      createdBy: admin!.id,
+    });
+    await tx.insert(s.controlEvents).values({
+      subjectId: subject("КП"),
+      date: addDays(monday, 14),
+      slotN: 7,
+      form: "Контрольная работа",
+      topics: "Протокол Диффи — Хеллмана\nЭлектронная подпись\nРасширенный алгоритм Евклида",
+      rules: "Можно пользоваться своими записями\nТелефоны сдаём",
+      createdBy: admin!.id,
+    });
   });
 
   const counts = await db.execute<{ table: string; n: number }>(sql`
@@ -269,6 +288,8 @@ async function main() {
     union all select 'schedule_entries', count(*)::int from schedule_entries
     union all select 'users', count(*)::int from users
     union all select 'schedule_changes', count(*)::int from schedule_changes
+    union all select 'assignments', count(*)::int from assignments
+    union all select 'control_events', count(*)::int from control_events
   `);
   console.info("Seeded demo data:", Object.fromEntries(counts.map((r) => [r.table, r.n])));
 }

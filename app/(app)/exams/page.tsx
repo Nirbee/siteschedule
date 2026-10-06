@@ -1,14 +1,6 @@
-import type { Metadata } from "next";
-import { PageHeader } from "@/components/ui/page-header";
-import { ComingSoon } from "@/components/ui/coming-soon";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Рубежки" };
-
+/** Old address of the control events section. */
 export default function ExamsPage() {
-  return (
-    <>
-      <PageHeader title="Рубежки" />
-      <ComingSoon>Здесь будут все рубежные контроли: даты, аудитории и условия допуска.</ComingSoon>
-    </>
-  );
+  redirect("/tasks?f=control");
 }
