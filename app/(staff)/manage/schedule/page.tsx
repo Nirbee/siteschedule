@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonClass } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/current";
@@ -65,8 +66,8 @@ export default async function SchedulePage({
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <PageHeader eyebrow="Режим старосты" title="Базовое расписание" />
       <p className="-mt-4 text-ink-2">
-        Повторяющиеся пары семестра. Разовые события (отмена, перенос, доп. пара) — через{" "}
-        <a href="/manage/changes/new">изменения</a>, базу ради них не трогаем.
+        Пары, которые повторяются каждую неделю. Чтобы отменить или перенести конкретную пару,
+        используйте <Link href="/manage/changes/new">«Изменить расписание»</Link>.
       </p>
 
       {params.ok ? (
@@ -93,7 +94,7 @@ export default async function SchedulePage({
             />
           </label>
           <label className={labelClass}>
-            Неделя 1
+            Первая неделя семестра
             <select
               name="firstWeekParity"
               className={field}
@@ -104,7 +105,7 @@ export default async function SchedulePage({
             </select>
           </label>
           <label className={labelClass}>
-            Начало (понедельник недели 1)
+            Понедельник первой учебной недели
             <input
               type="date"
               name="startsOn"
@@ -137,7 +138,8 @@ export default async function SchedulePage({
       <section id="subjects" className={card}>
         <h2 className="mb-1 text-[17px] font-bold">Дисциплины</h2>
         <p className="mb-3 text-[14px] text-muted">
-          «Сокращения» — через запятую, по ним бот будет раскладывать фото из чата (ТСиСА, ЗИС…).
+          Как ещё называют предмет в чате — по этим словам бот будет раскладывать фото (например,
+          ТСиСА, ЗИС).
         </p>
         <div className="flex flex-col gap-2">
           {subjects.map((subject) => (
@@ -235,7 +237,7 @@ function SubjectForm({ subject }: { subject?: Subject }) {
         />
       </label>
       <label className={`${labelClass} sm:col-span-2`}>
-        Сокращения для автосортировки
+        Другие названия (через запятую)
         <input name="aliases" className={field} defaultValue={subject?.aliases.join(", ")} />
       </label>
       <button type="submit" className={buttonClass("secondary", "sm:col-span-2")}>
@@ -365,7 +367,7 @@ function EntryForm({
         <input name="room" className={field} defaultValue={entry?.room ?? ""} maxLength={40} />
       </label>
       <label className={labelClass}>
-        Преподаватель (если не как у дисциплины)
+        Преподаватель (если другой)
         <input
           name="teacher"
           className={field}

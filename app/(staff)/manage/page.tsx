@@ -3,7 +3,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { CalendarCog, History, Pencil, Users, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { StagePlaceholder } from "@/components/ui/stage-placeholder";
 import { buttonClass } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/current";
 
@@ -39,9 +38,6 @@ export default async function ManagePage() {
             text="Доступ, роли, группы, ссылки для входа"
           />
         ) : null}
-        <StagePlaceholder stage="M4–M8">
-          «Неразобранное», новости, темы и рубежки появятся на следующих этапах.
-        </StagePlaceholder>
       </div>
     </>
   );
