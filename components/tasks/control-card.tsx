@@ -25,13 +25,13 @@ export function ControlCard({
       href={`/tasks/control/${event.id}` as Route}
       className={`flex items-center gap-3 text-ink no-underline ${
         flat
-          ? "rounded-[12px] bg-surface-muted px-3 py-2.5 hover:bg-chip"
-          : "rounded-card border-2 border-emph bg-surface p-[14px] hover:bg-surface-muted md:p-[18px]"
+          ? "rounded-[12px] bg-exam-bg px-3 py-2.5 hover:opacity-90"
+          : "rounded-card border-2 border-exam bg-surface p-[14px] hover:bg-surface-muted md:p-[18px]"
       }`}
     >
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[13px] text-muted">
-          <span className="rounded-badge bg-emph px-1.5 py-0.5 font-sans text-[12px] font-bold text-on-emph">
+          <span className="rounded-badge bg-exam px-1.5 py-0.5 font-sans text-[12px] font-bold text-exam-bg">
             {event.form}
           </span>
           {[when, formatRoom(event.room)].filter(Boolean).join(" · ")}

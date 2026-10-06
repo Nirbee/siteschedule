@@ -5,6 +5,7 @@ import {
   CalendarCog,
   ClipboardCheck,
   History,
+  ListChecks,
   NotebookPen,
   Pencil,
   Users,
@@ -37,6 +38,12 @@ export default async function ManagePage() {
           icon={ClipboardCheck}
           title="Контрольная"
           text="Дата, что будет, что можно, материалы для подготовки"
+        />
+        <Tile
+          href="/manage/topics/new"
+          icon={ListChecks}
+          title="Список тем"
+          text="С фото листа или из Excel; код для тех, кто на паре; выгрузка для преподавателя"
         />
         <Tile
           href="/manage/changes"

@@ -11,9 +11,10 @@ import { db } from "@/lib/db/client";
 import { media, mediaPages } from "@/lib/db/schema";
 import { objectPath } from "@/lib/storage/disk";
 import { needsViewCopy } from "./convert";
-import { extensionOf } from "./detect";
+import { detectUpload, extensionOf } from "./detect";
 import { heavyJob } from "./limit";
 import { stripRepeatedLines, textFromTsv } from "./ocr-layout";
+import { processPhoto } from "./photo";
 import { decodeText } from "./text";
 
 /** Pages with fewer letters than this are treated as scans and OCR'd. */
@@ -221,4 +222,13 @@ export function kickTextIndex(): void {
   void processTextIndex().catch((error: unknown) =>
     console.error("[search] loop failed:", error instanceof Error ? error.message : error),
   );
+}
+
+/** Text of a photo (e.g. a printed list of topics); throws ToolUnavailable without tesseract. */
+export async function recognizePhoto(bytes: Uint8Array, fileName: string): Promise<string> {
+  const detected = detectUpload(bytes, fileName);
+  if (detected.kind !== "photo") throw new Error("Это не фото");
+  const photo = await heavyJob(() => processPhoto(bytes, detected.format));
+  const png = await sharp(photo.full).grayscale().png().toBuffer();
+  return cleanText(await heavyJob(() => ocrImage(png, { dropMargins: false })));
 }

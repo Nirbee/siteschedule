@@ -50,6 +50,13 @@
       "when": 1791300496950,
       "tag": "0006_reindex_text",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791303728614,
+      "tag": "0007_topics",
+      "breakpoints": true
     }
   ]
 }

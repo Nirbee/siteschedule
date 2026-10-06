@@ -35,6 +35,8 @@
   --color-move-bg: #efe7f8;
   --color-add: #0f6b4d;
   --color-add-bg: #ddf1e7;
+  --color-exam: #8a4b00;
+  --color-exam-bg: #fdefd2;
 
   /* Photo viewer is dark in both themes. */
   --color-viewer: #0b0c0f;
@@ -82,6 +84,8 @@
     --color-move-bg: #2e2142;
     --color-add: #74d6ac;
     --color-add-bg: #12352a;
+    --color-exam: #ffc46b;
+    --color-exam-bg: #3a2a10;
     color-scheme: dark;
   }
 }
@@ -113,6 +117,8 @@
   --color-move-bg: #2e2142;
   --color-add: #74d6ac;
   --color-add-bg: #12352a;
+  --color-exam: #ffc46b;
+  --color-exam-bg: #3a2a10;
   color-scheme: dark;
 }
 

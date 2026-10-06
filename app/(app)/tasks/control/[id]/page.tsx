@@ -1,7 +1,7 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, BookOpenText, Pencil } from "lucide-react";
 import { controlTime } from "@/components/tasks/format";
 import { MaterialList } from "@/components/tasks/material-list";
 import { TaskText } from "@/components/tasks/task-text";
@@ -55,7 +55,7 @@ export default async function ControlEventPage({ params }: { params: Promise<Par
         <p className="mt-1.5 font-mono text-[15px] text-ink-2">{when}</p>
         <p
           className={`mt-2 inline-flex rounded-badge px-2 py-0.5 text-[13px] font-bold ${
-            event.date < today ? "bg-chip text-muted" : "bg-emph text-on-emph"
+            event.date < today ? "bg-chip text-muted" : "bg-exam text-exam-bg"
           }`}
         >
           {event.date < today ? `Прошла ${until}` : until === "сегодня" ? "Сегодня" : until}
@@ -63,7 +63,7 @@ export default async function ControlEventPage({ params }: { params: Promise<Par
       </div>
 
       {event.topics ? (
-        <Section title="Что будет">
+        <Section title="Вопросы и темы">
           <TaskText text={event.topics} className="text-[16px] text-ink" />
         </Section>
       ) : null}
@@ -84,6 +84,12 @@ export default async function ControlEventPage({ params }: { params: Promise<Par
         ) : (
           <p className="text-muted">Староста пока ничего не прикрепил.</p>
         )}
+        <Link
+          href={`/library/${event.subjectId}` as Route}
+          className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-semibold"
+        >
+          <BookOpenText size={16} aria-hidden /> Все конспекты и материалы по дисциплине
+        </Link>
       </Section>
 
       {isStaff(user.role) ? (

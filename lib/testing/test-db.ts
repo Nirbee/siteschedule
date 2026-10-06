@@ -28,6 +28,7 @@ const TABLES = [
   "media_pages",
   "media",
   "lesson_notes",
+  "topic_class_access",
   "topic_members",
   "topics",
   "topic_lists",

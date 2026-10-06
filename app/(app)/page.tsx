@@ -5,6 +5,7 @@ import { LessonCard } from "@/components/schedule/lesson-card";
 import { AssignmentCard } from "@/components/tasks/assignment-card";
 import { ControlCard } from "@/components/tasks/control-card";
 import { controlTime, dueTime } from "@/components/tasks/format";
+import { HeadsUp } from "@/components/tasks/heads-up";
 import { UpcomingList } from "@/components/tasks/upcoming-list";
 import { WeekStrip } from "@/components/schedule/week-strip";
 import { buttonClass } from "@/components/ui/button";
@@ -18,8 +19,9 @@ import { lessonKey } from "@/lib/ingest/targets";
 import { noteCounts } from "@/lib/services/library";
 import { loadScheduleData } from "@/lib/services/schedule";
 import { tasksFeed } from "@/lib/services/tasks";
+import { presentations, type Presentation } from "@/lib/services/topics";
 import { isHappening } from "@/lib/schedule/resolve";
-import { tasksOfDay } from "@/lib/tasks/place";
+import { attachToLessons, tasksOfDay } from "@/lib/tasks/place";
 
 export default async function TodayPage({
   searchParams,
@@ -41,13 +43,18 @@ export default async function TodayPage({
   }
 
   const monday = mondayOf(date);
+  // The shown week (strip marks), the shown day and the next weeks («Скоро»).
+  const rangeFrom = monday < today ? monday : today;
+  const later = date > today ? date : today;
+  const rangeTo =
+    addDays(later, UPCOMING_DAYS) > addDays(monday, 6)
+      ? addDays(later, UPCOMING_DAYS)
+      : addDays(monday, 6);
   const week = resolveWeek(data, monday, groupId);
-  const [notes, feed] = await Promise.all([
+  const [notes, feed, talks] = await Promise.all([
     noteCounts(monday, addDays(monday, 6)),
-    tasksFeed(user.id, groupId, data, {
-      from: date < today ? date : today,
-      to: addDays(date > today ? date : today, UPCOMING_DAYS),
-    }),
+    tasksFeed(user.id, groupId, data, { from: rangeFrom, to: rangeTo }),
+    presentations(user.id, rangeFrom, rangeTo),
   ]);
   const notesFor = (l: (typeof week)[number]["lessons"][number]) =>
     l.status === "cancelled" || l.status === "moved_out"
@@ -59,14 +66,33 @@ export default async function TodayPage({
   const info = weekInfo(data.semester, date);
   const summary = summarizeDay(lessons);
   const tasks = tasksOfDay(lessons, date, feed.assignments, feed.controls);
-  // «Скоро»: next control events and unfinished homework after the shown day.
+  const marks = Object.fromEntries(
+    week.map(({ date: day }) => [
+      day,
+      {
+        exams: feed.controls.filter((c) => c.date === day).map((c) => c.form),
+        homework: feed.assignments.filter((a) => a.due.date === day && !a.done).length,
+        talk: talks.some((t) => t.mine && t.date === day),
+      },
+    ]),
+  );
+  // «Выступают»: presentations go to the first lesson of their subject that day.
+  const dayTalks = attachToLessons(
+    lessons,
+    talks
+      .filter((t) => t.date === date)
+      .map((t) => ({ ...t, due: { date, slotN: null, startsAt: null } })),
+  );
+  // «Скоро»: unfinished homework for the week; control events and own talks after tomorrow
+  // (today's and tomorrow's are in the big notes above).
   const upcoming =
     date === today
       ? {
-          controls: feed.controls.filter((c) => c.date > today),
+          controls: feed.controls.filter((c) => c.date > addDays(today, 1)),
           assignments: feed.assignments.filter(
             (a) => a.due.date > today && a.due.date <= addDays(today, 7) && !a.done,
           ),
+          talks: talks.filter((t) => t.mine && t.date > addDays(today, 1)),
         }
       : null;
 
@@ -113,7 +139,17 @@ export default async function TodayPage({
         </div>
       </header>
 
-      <WeekStrip days={week} selected={date} today={today} />
+      {date === today ? (
+        <HeadsUp
+          today={today}
+          tomorrow={addDays(today, 1)}
+          controls={feed.controls}
+          talks={talks}
+          slots={data.slots}
+        />
+      ) : null}
+
+      <WeekStrip days={week} selected={date} today={today} marks={marks} />
 
       {tasks.dayLevel.controls.length || tasks.dayLevel.assignments.length ? (
         <section aria-label="На этот день" className="flex flex-col gap-2">
@@ -137,6 +173,7 @@ export default async function TodayPage({
         {lessons.length ? (
           lessons.map((lesson, i) => {
             const own = tasks.byLesson.get(i);
+            const speakers = dayTalks.byLesson.get(i);
             const canAdd = staff && isHappening(lesson) && lesson.kind !== "self_study";
             return (
               <LessonCard
@@ -144,9 +181,11 @@ export default async function TodayPage({
                 lesson={lesson}
                 notes={notesFor(lesson)}
                 showConflict={staff}
+                exam={Boolean(own?.controls.length)}
               >
-                {own || canAdd ? (
+                {own || canAdd || speakers ? (
                   <div className="mt-3 flex flex-col gap-2">
+                    {speakers ? <Speakers talks={speakers} /> : null}
                     {own?.controls.map((c) => (
                       <ControlCard
                         key={c.id}
@@ -192,9 +231,34 @@ export default async function TodayPage({
           today={today}
           assignments={upcoming.assignments}
           controls={upcoming.controls}
+          talks={upcoming.talks}
         />
       ) : null}
     </div>
+  );
+}
+
+/** «Выступают» on a lesson card: who presents which topic, in order. */
+function Speakers({ talks }: { talks: Presentation[] }) {
+  return (
+    <Link
+      href={`/topics/${talks[0]!.listId}?tab=queue` as Route}
+      className="block rounded-[12px] bg-surface-muted px-3 py-2.5 text-ink no-underline hover:bg-chip"
+    >
+      <span className="mb-1 block text-[12px] font-bold tracking-[0.04em] text-muted uppercase">
+        Выступают
+      </span>
+      <ol className="flex flex-col gap-1 text-[14px]">
+        {talks.map((t) => (
+          <li key={`${t.listId}-${t.n}`} className={t.mine ? "font-bold" : undefined}>
+            {t.names.join(", ")}{" "}
+            <span className="text-muted">
+              — {t.n}. {t.title}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </Link>
   );
 }
 

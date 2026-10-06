@@ -117,6 +117,7 @@ export default async function WeekPage({
                       notes={notesFor(lesson)}
                       compact
                       showConflict={staff}
+                      exam={Boolean(own?.controls.length)}
                     >
                       {own ? (
                         <TaskMarks
@@ -156,7 +157,7 @@ function TaskMarks({
       {controls.map((label, i) => (
         <span
           key={i}
-          className="rounded-badge bg-emph px-1.5 py-0.5 text-[12px] font-bold text-on-emph"
+          className="rounded-badge bg-exam px-1.5 py-0.5 text-[12px] font-bold text-exam-bg"
         >
           {label}
         </span>

@@ -36,7 +36,7 @@ async function main() {
   await db.transaction(async (tx) => {
     await tx.execute(sql`
       truncate table audit_log, outbox, news, task_materials, assignment_done, assignments, media,
-        lesson_notes, topic_members, topics, topic_lists,
+        lesson_notes, topic_class_access, topic_members, topics, topic_lists,
         control_events, schedule_change_groups, schedule_changes, schedule_entry_groups,
         schedule_entries, subjects, time_slots, semesters, login_requests, sessions, users, groups
       restart identity cascade
@@ -280,6 +280,26 @@ async function main() {
       rules: "Можно пользоваться своими записями\nТелефоны сдаём",
       createdBy: admin!.id,
     });
+
+    // Demo topic list, open for everyone.
+    const [demoList] = await tx
+      .insert(s.topicLists)
+      .values({
+        subjectId: subject("ПО ИБ"),
+        title: "Доклады",
+        opensAt: new Date(Date.now() - 60_000),
+        createdBy: admin!.id,
+      })
+      .returning();
+    await tx.insert(s.topics).values(
+      [
+        ["Государственная тайна", null],
+        ["Лицензирование в области ИБ", null],
+        ["Персональные данные", "Общие аспекты обработки"],
+        ["Персональные данные", "Биометрические данные"],
+        ["Электронная подпись", null],
+      ].map(([title, details], i) => ({ listId: demoList!.id, n: i + 1, title: title!, details })),
+    );
   });
 
   const counts = await db.execute<{ table: string; n: number }>(sql`

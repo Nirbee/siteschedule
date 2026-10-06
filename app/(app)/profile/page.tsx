@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { PageHeader } from "@/components/ui/page-header";
+import { FullNameForm } from "./full-name-form";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { buttonClass } from "@/components/ui/button";
 import { logoutAction, logoutOtherDevicesAction } from "@/lib/auth/actions";
@@ -42,6 +43,9 @@ export default async function ProfilePage() {
               </>
             ) : null}
           </dl>
+          <div className="mt-4 border-t border-line pt-4">
+            <FullNameForm initial={user.fullName} />
+          </div>
           {isStaff(user.role) ? (
             <Link href="/manage" className={buttonClass("secondary", "mt-4 w-full")}>
               Панель старосты

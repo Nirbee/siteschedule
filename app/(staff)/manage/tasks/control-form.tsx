@@ -243,14 +243,16 @@ export function ControlForm({
       </label>
 
       <label className={labelClass}>
-        Что будет
+        Вопросы и темы
         <textarea
-          rows={4}
+          rows={6}
           value={topics}
           onChange={(e) => setTopics(e.target.value)}
           maxLength={3000}
           className={area}
-          placeholder={"Каждая тема с новой строки, например:\nАлгоритмы на графах\nБулевы функции"}
+          placeholder={
+            "Каждый вопрос или тема с новой строки — можно вставить список из чата:\n1. Определение информации\n2. Алгоритмы на графах"
+          }
         />
       </label>
 

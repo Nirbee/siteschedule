@@ -26,19 +26,19 @@ export function MaterialPicker({
   const files = options.filter((o) => o.kind === "file" && !chosen.has(o.value));
   const notes = options.filter((o) => o.kind === "note" && !chosen.has(o.value));
 
+  const toChosen = (option: MaterialOption): ChosenMaterial => {
+    const id = option.value.slice(2);
+    return {
+      key: option.value,
+      input: option.kind === "file" ? { mediaId: id, page: null } : { lessonNoteId: id },
+      label: optionLabel(option),
+      pageCount: option.pageCount,
+    };
+  };
+
   const addOption = (raw: string) => {
     const option = options.find((o) => o.value === raw);
-    if (!option) return;
-    const id = option.value.slice(2);
-    onChange([
-      ...value,
-      {
-        key: option.value,
-        input: option.kind === "file" ? { mediaId: id, page: null } : { lessonNoteId: id },
-        label: optionLabel(option),
-        pageCount: option.pageCount,
-      },
-    ]);
+    if (option) onChange([...value, toChosen(option)]);
   };
 
   const addLink = () => {
@@ -144,6 +144,16 @@ export function MaterialPicker({
         <p className="text-[14px] text-muted">
           В библиотеке по этой дисциплине пока нет файлов — загрузите их ниже.
         </p>
+      ) : null}
+
+      {notes.length > 1 ? (
+        <button
+          type="button"
+          onClick={() => onChange([...value, ...notes.map(toChosen)])}
+          className="inline-flex min-h-11 items-center gap-1.5 self-start text-[14px] font-semibold text-accent"
+        >
+          <Images size={16} aria-hidden /> Все конспекты занятий ({notes.length})
+        </button>
       ) : null}
 
       {linkOpen ? (

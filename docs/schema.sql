@@ -31,6 +31,7 @@ create table users (
   username         text,
   photo_url        text,
   display_name     text not null,               -- как показывать в списках: «Катя С.»
+  full_name        text,                        -- «Фамилия Имя» для списков тем
   role             user_role not null default 'student',
   group_id         uuid references groups(id) on delete set null,  -- выбирает при первом входе
   has_access       boolean not null default false, -- участник чата или выдано админом
@@ -206,6 +207,10 @@ create table topic_lists (
   pick_deadline    timestamptz,                  -- null = без дедлайна
   default_capacity int not null default 1 check (default_capacity >= 1),
   rules            text,
+  class_opened_at  timestamptz,                  -- «для присутствующих» (код с экрана старосты)
+  class_secret     text,                         -- ключ HMAC для кода (меняется каждые 30 с)
+  opens_at         timestamptz,                  -- «для всех»; может быть запланировано
+  announced_at     timestamptz,                  -- объявление в чат отправлено (M6)
   created_by       uuid references users(id),
   created_at       timestamptz not null default now()
 );
@@ -215,6 +220,7 @@ create table topics (
   list_id    uuid not null references topic_lists(id) on delete cascade,
   n          int not null,
   title      text not null,
+  details    text,                                -- подтема
   capacity   int not null default 1 check (capacity >= 1),  -- 1, 2 или команда
   due_date   date,
   due_order  int,                                 -- порядок выступления внутри даты
@@ -231,6 +237,14 @@ create table topic_members (
   primary key (topic_id, user_id),
   unique (list_id, user_id),                      -- одна тема на человека в списке
   foreign key (topic_id, list_id) references topics(id, list_id) on delete cascade
+);
+
+-- Кто ввёл код с экрана старосты на паре: выбирают до открытия «для всех»
+create table topic_class_access (
+  list_id     uuid not null references topic_lists(id) on delete cascade,
+  user_id     uuid not null references users(id) on delete cascade,
+  granted_at  timestamptz not null default now(),
+  primary key (list_id, user_id)
 );
 
 -- Конспекты и материалы -------------------------------------------------------

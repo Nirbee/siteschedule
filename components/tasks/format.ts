@@ -98,3 +98,30 @@ export function bodyLines(body: string): string[] {
     .map((line) => line.trim().replace(/^([-–—•*]|\d+[.)])\s+/, ""))
     .filter(Boolean);
 }
+
+const NUMBERED = /^\s*(\d+)[.)]\s+(.*)$/;
+
+/**
+ * «Вопросы к РК1:\n1. …\n2. …»: when at least two lines and most of them are numbered, returns
+ * the heading lines and items with their own numbers; unnumbered lines inside the list continue
+ * the previous item. Otherwise null.
+ */
+export function numberedItems(
+  body: string,
+): { intro: string[]; items: { n: number; text: string }[] } | null {
+  const lines = body
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const count = lines.filter((l) => NUMBERED.test(l)).length;
+  if (count < 2 || count < (lines.length - 1) * 0.6) return null;
+  const intro: string[] = [];
+  const items: { n: number; text: string }[] = [];
+  for (const line of lines) {
+    const match = NUMBERED.exec(line);
+    if (match) items.push({ n: Number(match[1]), text: match[2]! });
+    else if (items.length) items[items.length - 1]!.text += ` ${line}`;
+    else intro.push(line);
+  }
+  return { intro, items };
+}

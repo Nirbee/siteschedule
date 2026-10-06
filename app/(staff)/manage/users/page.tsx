@@ -54,6 +54,22 @@ export default async function UsersPage() {
 
               <form action={updateMemberAction} className="flex gap-2">
                 <input type="hidden" name="userId" value={member.id} />
+                <input type="hidden" name="kind" value="fullName" />
+                <input
+                  name="value"
+                  defaultValue={member.fullName ?? ""}
+                  placeholder="Фамилия Имя для списков"
+                  aria-label="ФИО"
+                  maxLength={120}
+                  className={fieldClass}
+                />
+                <button type="submit" className={buttonClass("secondary")}>
+                  OK
+                </button>
+              </form>
+
+              <form action={updateMemberAction} className="flex gap-2">
+                <input type="hidden" name="userId" value={member.id} />
                 <input type="hidden" name="kind" value="group" />
                 <select
                   name="value"

@@ -20,3 +20,23 @@ describe("task format", () => {
     ]);
   });
 });
+
+describe("numberedItems", () => {
+  it("keeps the numbers and the heading of questions pasted from the chat", async () => {
+    const { numberedItems } = await import("./format");
+    expect(
+      numberedItems(
+        "Вопросы к РК1 по ЗИС:\n\n1. Определение информации.\n2. Определение ИС,\nпримеры.\n13. Уметь категорировать АС",
+      ),
+    ).toEqual({
+      intro: ["Вопросы к РК1 по ЗИС:"],
+      items: [
+        { n: 1, text: "Определение информации." },
+        { n: 2, text: "Определение ИС, примеры." },
+        { n: 13, text: "Уметь категорировать АС" },
+      ],
+    });
+    expect(numberedItems("Алгоритмы на графах\nБулевы функции")).toBeNull();
+    expect(numberedItems("1. Одна строка")).toBeNull();
+  });
+});

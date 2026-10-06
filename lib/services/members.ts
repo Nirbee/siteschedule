@@ -47,7 +47,8 @@ type AdminChange =
   | { kind: "access"; value: boolean }
   | { kind: "blocked"; value: boolean }
   | { kind: "role"; value: User["role"] }
-  | { kind: "group"; value: string | null };
+  | { kind: "group"; value: string | null }
+  | { kind: "fullName"; value: string | null };
 
 /** Admin edits another member. Blocking also ends all their sessions. */
 export async function updateMember(actorId: string, userId: string, change: AdminChange) {
@@ -58,7 +59,9 @@ export async function updateMember(actorId: string, userId: string, change: Admi
         ? { isBlocked: change.value }
         : change.kind === "role"
           ? { role: change.value }
-          : { groupId: change.value };
+          : change.kind === "fullName"
+            ? { fullName: change.value }
+            : { groupId: change.value };
 
   await db().transaction(async (tx) => {
     await tx.update(users).set(set).where(eq(users.id, userId));

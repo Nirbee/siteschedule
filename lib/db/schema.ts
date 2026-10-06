@@ -65,6 +65,8 @@ export const users = pgTable(
     username: text(),
     photoUrl: text(),
     displayName: text().notNull(),
+    /** «Фамилия Имя» for topic lists sent to teachers (asked once, editable by admins). */
+    fullName: text(),
     role: userRole().notNull().default("student"),
     groupId: uuid().references(() => groups.id, { onDelete: "set null" }),
     hasAccess: boolean().notNull().default(false),
@@ -312,6 +314,11 @@ export const topicLists = pgTable(
     pickDeadline: timestamptz(),
     defaultCapacity: integer().notNull().default(1),
     rules: text(),
+    // Opening: first those at the lesson (code from the starosta's screen), then everyone.
+    classOpenedAt: timestamptz(),
+    classSecret: text(), // HMAC key of the rotating code
+    opensAt: timestamptz(), // for everyone; may be scheduled ahead
+    announcedAt: timestamptz(), // Telegram announcement of the opening sent (M6)
     createdBy: uuid().references(() => users.id),
     createdAt: createdAt(),
   },
@@ -327,6 +334,7 @@ export const topics = pgTable(
       .references(() => topicLists.id, { onDelete: "cascade" }),
     n: integer().notNull(),
     title: text().notNull(),
+    details: text(), // подтема: «Персональные данные» → «Обработка биометрических ПДн»
     capacity: integer().notNull().default(1),
     dueDate: date({ mode: "string" }),
     dueOrder: integer(),
@@ -357,6 +365,21 @@ export const topicMembers = pgTable(
       foreignColumns: [topics.id, topics.listId],
     }).onDelete("cascade"),
   ],
+);
+
+/** Who entered the code at the lesson: they may pick before the list opens for everyone. */
+export const topicClassAccess = pgTable(
+  "topic_class_access",
+  {
+    listId: uuid()
+      .notNull()
+      .references(() => topicLists.id, { onDelete: "cascade" }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    grantedAt: timestamptz().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.listId, t.userId] })],
 );
 
 // Notes and materials ---------------------------------------------------------

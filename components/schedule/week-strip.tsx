@@ -21,14 +21,23 @@ const TONE_DOT: Record<DayFlagTone, string> = {
  * Mon–Sat tiles (Sunday only when something was moved there); the selected day is the dark tile.
  * Fits a 390px phone: there the change note collapses into a coloured dot.
  */
+/** Homework, control events and the viewer's presentations of a day. */
+export interface DayMarks {
+  exams: string[]; // forms: «Контрольная работа»
+  homework: number; // not done yet
+  talk: boolean;
+}
+
 export function WeekStrip({
   days,
   selected,
   today,
+  marks = {},
 }: {
   days: ResolvedWeekDay[];
   selected: IsoDate;
   today: IsoDate;
+  marks?: Record<IsoDate, DayMarks>;
 }) {
   const visible = days.filter((d, i) => i < 6 || d.lessons.length > 0);
 
@@ -41,9 +50,16 @@ export function WeekStrip({
           const isSelected = date === selected;
           const count = summarizeDay(lessons).lessons;
           const flag = dayFlag(lessons);
+          const mark = marks[date];
+          const exam = mark?.exams[0];
+          const extra = [
+            exam ? exam.toLowerCase() : null,
+            mark?.talk ? "твой доклад" : null,
+            mark?.homework ? plural(mark.homework, "задание", "задания", "заданий") : null,
+          ].filter(Boolean);
           const label = `${shortWeekday(date)}, ${Number(date.slice(8))}: ${
             count ? plural(count, "пара", "пары", "пар") : "нет пар"
-          }${flag ? `, ${flag.text}` : ""}`;
+          }${flag ? `, ${flag.text}` : ""}${extra.length ? `, ${extra.join(", ")}` : ""}`;
           return (
             <li key={date}>
               <Link
@@ -77,21 +93,49 @@ export function WeekStrip({
                   {count || "–"}
                 </span>
                 {flag ? (
-                  <>
-                    <span
-                      className={`mt-1 hidden max-w-full truncate text-[12px] font-bold md:block ${
-                        isSelected ? "text-on-emph" : TONE_TEXT[flag.tone]
-                      }`}
-                    >
-                      {flag.text}
-                    </span>
-                    <span
-                      aria-hidden
-                      className={`absolute top-2 right-2 size-2 rounded-full md:hidden ${
-                        isSelected ? "bg-on-emph" : TONE_DOT[flag.tone]
-                      }`}
-                    />
-                  </>
+                  <span
+                    className={`mt-1 hidden max-w-full truncate text-[12px] font-bold md:block ${
+                      isSelected ? "text-on-emph" : TONE_TEXT[flag.tone]
+                    }`}
+                  >
+                    {flag.text}
+                  </span>
+                ) : null}
+                {exam ? (
+                  <span className="mt-1 hidden max-w-full truncate rounded-badge bg-exam px-1.5 py-0.5 text-[11px] font-bold text-exam-bg md:block">
+                    {exam}
+                  </span>
+                ) : null}
+                {mark?.talk || mark?.homework ? (
+                  <span
+                    className={`mt-1 hidden max-w-full truncate text-[12px] md:block ${
+                      isSelected ? "text-on-emph-muted" : "text-ink-2"
+                    }`}
+                  >
+                    {[
+                      mark.talk ? "твой доклад" : null,
+                      mark.homework ? plural(mark.homework, "задание", "задания", "заданий") : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                ) : null}
+                {/* Phone: coloured dots instead of the notes. */}
+                {flag || exam ? (
+                  <span aria-hidden className="absolute top-2 right-2 flex gap-1 md:hidden">
+                    {exam ? (
+                      <span
+                        className={`size-2 rounded-full ${isSelected ? "bg-on-emph" : "bg-exam"}`}
+                      />
+                    ) : null}
+                    {flag ? (
+                      <span
+                        className={`size-2 rounded-full ${
+                          isSelected ? "bg-on-emph" : TONE_DOT[flag.tone]
+                        }`}
+                      />
+                    ) : null}
+                  </span>
                 ) : null}
               </Link>
             </li>

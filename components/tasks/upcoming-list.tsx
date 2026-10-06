@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { IsoDate } from "@/lib/schedule/dates";
 import type { ControlEventView, PlacedAssignment } from "@/lib/services/tasks";
+import type { Presentation } from "@/lib/services/topics";
 import { untilLabel } from "@/lib/tasks/place";
 import { bodyLines } from "./format";
 
@@ -10,28 +11,37 @@ type Row = {
   id: string;
   href: Route;
   badge: string;
-  strong: boolean;
+  tone: "exam" | "talk" | "plain";
   title: string;
   text: string;
   date: IsoDate;
 };
+
+const TONES = {
+  exam: "bg-exam text-exam-bg",
+  talk: "bg-change-bg text-change",
+  plain: "bg-chip text-ink-2",
+} as const;
 
 /** «Скоро» on the Today page: nearest control events and unfinished homework. */
 export function UpcomingList({
   today,
   assignments,
   controls,
+  talks = [],
 }: {
   today: IsoDate;
   assignments: PlacedAssignment[];
   controls: ControlEventView[];
+  /** The viewer's own topic presentations. */
+  talks?: Presentation[];
 }) {
   const rows: Row[] = [
     ...controls.map((c) => ({
       id: c.id,
       href: `/tasks/control/${c.id}` as Route,
       badge: c.form,
-      strong: true,
+      tone: "exam" as const,
       title: c.subjectName,
       text: c.topics ? bodyLines(c.topics).slice(0, 2).join(" · ") : "",
       date: c.date,
@@ -40,10 +50,19 @@ export function UpcomingList({
       id: a.id,
       href: `/tasks#a-${a.id}` as Route,
       badge: "Задание",
-      strong: false,
+      tone: "plain" as const,
       title: a.subjectName,
       text: bodyLines(a.body)[0] ?? "",
       date: a.due.date,
+    })),
+    ...talks.map((t) => ({
+      id: `${t.listId}-${t.n}`,
+      href: `/topics/${t.listId}?tab=queue` as Route,
+      badge: "Твоя тема",
+      tone: "talk" as const,
+      title: `${t.n}. ${t.title}`,
+      text: t.dueOrder ? `выступаешь ${t.dueOrder}-м` : "",
+      date: t.date,
     })),
   ].sort((a, b) => a.date.localeCompare(b.date));
   if (rows.length === 0) return null;
@@ -68,7 +87,7 @@ export function UpcomingList({
               <span className="min-w-0 flex-1">
                 <span
                   className={`inline-block rounded-badge px-1.5 py-0.5 text-[12px] font-bold ${
-                    row.strong ? "bg-emph text-on-emph" : "bg-chip text-ink-2"
+                    TONES[row.tone]
                   }`}
                 >
                   {row.badge}

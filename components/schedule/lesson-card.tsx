@@ -18,6 +18,7 @@ export function LessonCard({
   showConflict = false,
   notes,
   children,
+  exam = false,
 }: {
   lesson: ResolvedLesson;
   compact?: boolean;
@@ -26,6 +27,8 @@ export function LessonCard({
   notes?: LessonNotesInfo;
   /** Homework and control events of this lesson. */
   children?: React.ReactNode;
+  /** A control event takes place at this lesson: amber frame. */
+  exam?: boolean;
 }) {
   if (lesson.kind === "self_study") return <SelfStudyCard lesson={lesson} compact={compact} />;
 
@@ -36,7 +39,7 @@ export function LessonCard({
 
   return (
     <article
-      className={`flex rounded-card border border-line bg-surface ${
+      className={`flex rounded-card bg-surface ${exam ? "border-2 border-exam" : "border border-line"} ${
         compact ? "gap-3 p-3" : "gap-4 p-[14px] md:gap-5 md:p-[22px]"
       }`}
     >
