@@ -1,0 +1,17 @@
+.git
+.github
+.next
+node_modules
+dist
+storage
+data
+tg-export
+_archive
+.env
+.env.*
+!.env.example
+.claude
+design
+docs
+coverage
+*.log

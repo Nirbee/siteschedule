@@ -44,6 +44,7 @@ export default defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "dist/**",
     "drizzle/**",
     "design/**",
     "_archive/**",

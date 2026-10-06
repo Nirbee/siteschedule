@@ -22,7 +22,8 @@
     "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
     "bot:dev": "tsx watch --env-file-if-exists=.env bot/index.ts",
     "bot:start": "tsx bot/index.ts",
-    "schedule:import": "tsx --env-file-if-exists=.env scripts/schedule-import.ts"
+    "schedule:import": "tsx --env-file-if-exists=.env scripts/schedule-import.ts",
+    "build:scripts": "esbuild bot/index.ts scripts/migrate.ts scripts/schedule-import.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist --out-extension:.js=.cjs --log-level=warning"
   },
   "dependencies": {
     "@date-fns/tz": "1.5.0",
@@ -46,6 +47,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "drizzle-kit": "0.31.11",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.8",
     "prettier": "3.9.9",
