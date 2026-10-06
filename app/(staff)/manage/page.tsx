@@ -5,6 +5,7 @@ import {
   CalendarCog,
   ClipboardCheck,
   History,
+  Images,
   ListChecks,
   NotebookPen,
   Pencil,
@@ -14,11 +15,13 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonClass } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/current";
+import { inboxCounts } from "@/lib/services/inbox";
 
 export const metadata: Metadata = { title: "Панель старосты" };
 
 export default async function ManagePage() {
   const { user } = await requireRole("starosta", "admin");
+  const inbox = await inboxCounts();
 
   return (
     <>
@@ -27,6 +30,16 @@ export default async function ManagePage() {
         <Link href="/manage/changes/new" className={buttonClass("primary", "w-full")}>
           <Pencil size={20} aria-hidden /> Изменить расписание
         </Link>
+        <Tile
+          href="/manage/inbox"
+          icon={Images}
+          title={inbox.unsorted ? `Разбор фото из чата · ${inbox.unsorted}` : "Разбор фото из чата"}
+          text={
+            inbox.unsorted
+              ? "Неразобранное: отнести к паре, в материалы или удалить"
+              : "Всё разобрано; можно проверить, что разложилось само"
+          }
+        />
         <Tile
           href="/manage/tasks/new?type=assignment"
           icon={NotebookPen}

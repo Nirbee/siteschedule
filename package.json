@@ -23,7 +23,8 @@
     "bot:dev": "tsx watch --env-file-if-exists=.env bot/index.ts",
     "bot:start": "tsx bot/index.ts",
     "schedule:import": "tsx --env-file-if-exists=.env scripts/schedule-import.ts",
-    "build:scripts": "esbuild bot/index.ts scripts/migrate.ts scripts/schedule-import.ts --bundle --platform=node --target=node24 --format=cjs --keep-names --outdir=dist --out-extension:.js=.cjs --log-level=warning"
+    "import:tg": "tsx --env-file-if-exists=.env scripts/import-tg.ts",
+    "build:scripts": "esbuild bot/index.ts scripts/migrate.ts scripts/schedule-import.ts scripts/import-tg.ts --bundle --external:sharp --external:heic-decode --external:libheif-js --platform=node --target=node24 --format=cjs --keep-names --outdir=dist --out-extension:.js=.cjs --log-level=warning"
   },
   "dependencies": {
     "@date-fns/tz": "1.5.0",

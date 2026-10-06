@@ -218,7 +218,8 @@ export async function processTextIndex(): Promise<void> {
 }
 
 export function kickTextIndex(): void {
-  if (process.env.NODE_ENV === "test") return; // tests call processTextIndex directly
+  // Tests call processTextIndex directly; the import script leaves the work to the site.
+  if (process.env.NODE_ENV === "test" || process.env.PARA_NO_BACKGROUND_JOBS) return;
   void processTextIndex().catch((error: unknown) =>
     console.error("[search] loop failed:", error instanceof Error ? error.message : error),
   );

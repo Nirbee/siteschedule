@@ -22,8 +22,8 @@ type Search = { entry?: string; page?: string };
 const MAX_TEXT_BYTES = 2 * 1024 * 1024;
 const IMAGE_EXT = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 
-async function load(id: string) {
-  return /^[0-9a-f-]{36}$/.test(id) ? getServableMedia(id) : undefined;
+async function load(id: string, viewer?: Parameters<typeof getServableMedia>[1]) {
+  return /^[0-9a-f-]{36}$/.test(id) ? getServableMedia(id, viewer) : undefined;
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -38,18 +38,20 @@ export default async function ViewPage({
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  await requireMember();
+  const { user } = await requireMember();
   const [{ id }, search] = await Promise.all([params, searchParams]);
-  const item = await load(id);
+  const item = await load(id, user);
   if (!item) notFound();
   const page = Number(search.page);
   const initialPage = Number.isInteger(page) && page > 1 ? page : undefined;
   const subject = item.subjectId ? await getSubject(item.subjectId) : undefined;
   const ext = extensionOf(item.fileName);
   const back = (
-    subject
-      ? `/library/${subject.id}${item.lessonNoteId ? `#note-${item.lessonNoteId}` : "?tab=materials"}`
-      : "/library"
+    item.status === "unsorted"
+      ? "/manage/inbox"
+      : subject
+        ? `/library/${subject.id}${item.lessonNoteId ? `#note-${item.lessonNoteId}` : "?tab=materials"}`
+        : "/library"
   ) as Route;
 
   let body: React.ReactNode;

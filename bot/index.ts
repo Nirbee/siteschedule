@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
 import { LOGIN_CODE_PATTERN } from "@/lib/bot-api/contract";
 import { loadBotEnv } from "./env";
+import { handleChatMedia } from "./ingest";
 import { handleLoginStart, linkKeyboard } from "./login";
 import { createSiteClient } from "./site-client";
 
@@ -23,6 +24,17 @@ dm.command("start", async (ctx) => {
     { reply_markup: linkKeyboard("Открыть сайт", siteUrl) },
   );
 });
+
+// New photos/files in the chosen topics of the course chat go to the site (silently).
+const ingestTopics = new Set(env.TELEGRAM_INGEST_TOPICS);
+if (env.TELEGRAM_CHAT_ID !== undefined && ingestTopics.size > 0) {
+  const chatId = env.TELEGRAM_CHAT_ID;
+  bot
+    .chatType(["group", "supergroup"])
+    .on(["message:photo", "message:document"], (ctx) =>
+      handleChatMedia(ctx, { site, chatId, topics: ingestTopics, token: env.TELEGRAM_BOT_TOKEN }),
+    );
+}
 
 // Logs the chat id when the bot is added to a group — needed for TELEGRAM_CHAT_ID.
 bot.on("my_chat_member", (ctx) => {
@@ -50,6 +62,8 @@ async function main() {
   }
   if (env.TELEGRAM_CHAT_ID === undefined) {
     console.warn("[bot] TELEGRAM_CHAT_ID is not set: chat membership is not checked on login");
+  } else if (ingestTopics.size > 0) {
+    console.info(`[bot] importing photos/files from topics ${[...ingestTopics].join(", ")}`);
   }
 
   const shutdown = () => void bot.stop();

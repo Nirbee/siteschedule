@@ -18,9 +18,10 @@ const VIEWABLE: Record<string, string> = {
 
 /** One file from inside a ZIP: ?entry=<index>. Viewable types open inline, others download. */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await getMember())) return new Response("Unauthorized", { status: 401 });
+  const current = await getMember();
+  if (!current) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
-  const item = /^[0-9a-f-]{36}$/.test(id) ? await getServableMedia(id) : undefined;
+  const item = /^[0-9a-f-]{36}$/.test(id) ? await getServableMedia(id, current.user) : undefined;
   if (!item || extensionOf(item.fileName) !== "zip")
     return new Response("Not found", { status: 404 });
 

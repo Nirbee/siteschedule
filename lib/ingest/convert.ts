@@ -122,6 +122,7 @@ export async function processViewCopies(): Promise<void> {
 
 /** Fire-and-forget trigger used after uploads and on server start. */
 export function kickViewCopies(): void {
+  if (process.env.PARA_NO_BACKGROUND_JOBS) return; // the import script: the site does it
   void processViewCopies().catch((error: unknown) =>
     console.error("[convert] loop failed:", error instanceof Error ? error.message : error),
   );

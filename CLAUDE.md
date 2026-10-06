@@ -32,7 +32,7 @@
 - `pnpm db:generate` / `pnpm db:migrate` — миграции
 - `pnpm db:seed` — демо-данные
 - `pnpm schedule:import data/private/schedule.json` — загрузить реальное базовое расписание (повторный запуск обновляет)
-- `pnpm import:tg <папка>` — импорт экспорта Telegram Desktop (M5)
+- `pnpm import:tg <папка> --topics 1,2,16 [--apply]` — импорт экспорта Telegram Desktop (без `--apply` — пробный прогон с отчётом)
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`
 - `docker compose up -d` — postgres локально
 

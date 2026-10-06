@@ -9,6 +9,16 @@ const botEnvSchema = z.object({
   BOT_API_SECRET: z.string().min(32, "BOT_API_SECRET must be at least 32 characters"),
   /** Course group chat: membership there grants access to the site. */
   TELEGRAM_CHAT_ID: z.coerce.number().int().optional(),
+  /** Topics whose photos/files go to the site, e.g. "1,2,16" (1 = General). Empty: off. */
+  TELEGRAM_INGEST_TOPICS: z
+    .string()
+    .optional()
+    .transform((v) =>
+      (v ?? "")
+        .split(",")
+        .map((t) => Number(t.trim()))
+        .filter((t) => Number.isInteger(t) && t > 0),
+    ),
 });
 
 export type BotEnv = z.infer<typeof botEnvSchema>;

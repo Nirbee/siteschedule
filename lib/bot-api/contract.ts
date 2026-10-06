@@ -32,3 +32,31 @@ export const loginConfirmResponse = z.object({
   siteUrl: z.url(),
 });
 export type LoginConfirmResponse = z.infer<typeof loginConfirmResponse>;
+
+/** Bot API can download files up to 20 MB; base64 adds a third. */
+export const MAX_CHAT_FILE_BYTES = 20 * 1024 * 1024;
+
+/** A photo or document posted in an imported topic of the course chat. */
+export const chatIngestRequest = z.object({
+  chatId: z.number().int(),
+  messageId: z.number().int().positive(),
+  threadId: z.number().int().positive(),
+  mediaGroupId: z.string().max(64).nullable(),
+  author: z.object({ id: z.number().int().positive(), name: z.string().max(200) }).nullable(),
+  caption: z.string().max(4096),
+  postedAt: z.number().int().positive(), // unix seconds
+  fileName: z.string().min(1).max(255),
+  /** File bytes, base64. */
+  data: z
+    .string()
+    .min(1)
+    .max(Math.ceil((MAX_CHAT_FILE_BYTES * 4) / 3) + 4),
+});
+export type ChatIngestRequest = z.infer<typeof chatIngestRequest>;
+
+export const chatIngestResponse = z.object({
+  status: z.enum(["created", "duplicate", "rejected"]),
+  /** Where it went: a lesson, materials, or «Неразобранное». */
+  placement: z.enum(["lesson", "materials", "unsorted"]).nullable(),
+});
+export type ChatIngestResponse = z.infer<typeof chatIngestResponse>;

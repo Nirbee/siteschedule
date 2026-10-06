@@ -222,6 +222,8 @@ export async function createSession(
     expiresAt: plus(now, SESSION_TTL_MS),
     userAgent: userAgent?.slice(0, 400) ?? null,
   });
+  // Shown to admins as «заходил(а) …»; later updated when the session is renewed.
+  await tx.update(users).set({ lastSeenAt: now }).where(eq(users.id, userId));
   return token;
 }
 

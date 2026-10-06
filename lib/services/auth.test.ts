@@ -218,6 +218,16 @@ describe("sessions", () => {
     return { user, token };
   }
 
+  it("record the visit when the session starts and when it is renewed", async () => {
+    const { user, token } = await session();
+    const [created] = await db.select().from(users).where(eq(users.id, user.id));
+    expect(created?.lastSeenAt).toEqual(T0);
+    const visit = at(SESSION_RENEW_AFTER_MS + 1000);
+    await getSessionUser(token, { now: visit });
+    const [renewed] = await db.select().from(users).where(eq(users.id, user.id));
+    expect(renewed?.lastSeenAt).toEqual(visit);
+  });
+
   it("expire after the TTL without visits", async () => {
     const { user, token } = await session();
     expect(await getSessionUser(token, { now: at(SESSION_TTL_MS + 1) })).toBeNull();

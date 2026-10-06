@@ -23,7 +23,24 @@ export type IngestTarget =
       kind: LessonKind | null;
       title?: string | null; // topic of the lesson, set if the note has none yet
     }
-  | { type: "materials"; subjectId: string };
+  | { type: "materials"; subjectId: string }
+  | {
+      // «Неразобранное»: a starosta decides; the hint comes from auto-sorting.
+      type: "unsorted";
+      suggestion: { subjectId: string | null; date: IsoDate | null; slotN: number | null };
+      reason: string;
+    };
+
+/** Where a message came from in the course chat (import and bot). */
+export interface TelegramOrigin {
+  chatId: number;
+  messageId: number;
+  threadId: number | null;
+  mediaGroupId: string | null;
+  authorId: number | null;
+  authorName: string | null;
+  caption: string | null;
+}
 
 export interface IngestInput {
   bytes: Uint8Array;
@@ -32,6 +49,7 @@ export interface IngestInput {
   uploaderId: string | null;
   source?: "upload" | "tg_import" | "tg_bot";
   postedAt?: Date;
+  telegram?: TelegramOrigin;
 }
 
 export type IngestResult =
@@ -50,7 +68,9 @@ async function findBySha(hash: string) {
 }
 
 /** The library «занятие» for a lesson, created on first upload. */
-async function lessonNoteFor(target: Extract<IngestTarget, { type: "lesson" }>): Promise<string> {
+export async function lessonNoteFor(
+  target: Extract<IngestTarget, { type: "lesson" }>,
+): Promise<string> {
   const key = {
     subjectId: target.subjectId,
     date: target.date,
@@ -85,7 +105,20 @@ async function lessonNoteFor(target: Extract<IngestTarget, { type: "lesson" }>):
   return existing.id;
 }
 
+/** A chat message already imported (even if its photo was deleted as not study-related). */
+async function findTelegramMessage(origin: TelegramOrigin) {
+  const [row] = await db()
+    .select({ id: media.id })
+    .from(media)
+    .where(and(eq(media.tgChatId, origin.chatId), eq(media.tgMessageId, origin.messageId)));
+  return row;
+}
+
 export async function ingest(input: IngestInput): Promise<IngestResult> {
+  if (input.telegram) {
+    const known = await findTelegramMessage(input.telegram);
+    if (known) return { status: "duplicate", mediaId: known.id };
+  }
   const detected = detectUpload(input.bytes, input.fileName);
   if (detected.kind === "rejected") return { status: "rejected", error: detected.reason };
 
@@ -137,7 +170,25 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
       };
     }
 
-    const lessonNoteId = input.target.type === "lesson" ? await lessonNoteFor(input.target) : null;
+    const target = input.target;
+    const lessonNoteId = target.type === "lesson" ? await lessonNoteFor(target) : null;
+    const tg = input.telegram;
+    const placement =
+      target.type === "unsorted"
+        ? {
+            status: "unsorted" as const,
+            subjectId: null,
+            suggestedSubjectId: target.suggestion.subjectId,
+            suggestedLessonDate: target.suggestion.date,
+            suggestedSlotN: target.suggestion.slotN,
+            suggestionReason: target.reason,
+          }
+        : {
+            status: "sorted" as const,
+            subjectId: target.subjectId,
+            sortedBy: input.uploaderId,
+            sortedAt: new Date(),
+          };
     const [last] = await db()
       .select({ sort: max(media.sort) })
       .from(media)
@@ -147,16 +198,20 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
       .insert(media)
       .values({
         ...row,
-        status: "sorted",
-        subjectId: input.target.subjectId,
+        ...placement,
         lessonNoteId,
         sha256: hash,
         sort: (last?.sort ?? -1) + 1,
         source: input.source ?? "upload",
         uploaderId: input.uploaderId,
         postedAt: input.postedAt ?? new Date(),
-        sortedBy: input.uploaderId,
-        sortedAt: new Date(),
+        caption: tg?.caption ?? null,
+        tgChatId: tg?.chatId ?? null,
+        tgMessageId: tg?.messageId ?? null,
+        tgThreadId: tg?.threadId ?? null,
+        tgMediaGroupId: tg?.mediaGroupId ?? null,
+        tgAuthorId: tg?.authorId ?? null,
+        tgAuthorName: tg?.authorName ?? null,
       })
       .returning({ id: media.id });
     if (row.viewStatus === "pending") kickViewCopies();
@@ -165,7 +220,9 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
   } catch (error) {
     await Promise.all(written.map((key) => deleteObject(key)));
     // Two people uploading the same file at once: the unique index decides.
-    const existing = await findBySha(hash);
+    const existing =
+      (await findBySha(hash)) ??
+      (input.telegram ? await findTelegramMessage(input.telegram) : undefined);
     if (existing) return { status: "duplicate", mediaId: existing.id };
     throw error;
   }

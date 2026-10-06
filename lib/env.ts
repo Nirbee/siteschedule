@@ -14,6 +14,16 @@ const serverEnvSchema = z
     TELEGRAM_BOT_USERNAME: z.string().min(1).optional(),
     /** Dev only: grant access when the bot could not check chat membership (no chat configured). */
     ACCESS_WITHOUT_CHAT_CHECK: z.stringbool().default(false),
+    /** Chat topics whose photos/files always go to «Неразобранное» (announcements, not lessons). */
+    INGEST_REVIEW_TOPICS: z
+      .string()
+      .default("")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((id) => Number(id.trim()))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
     /** Telegram ids that become admins (with access) on login — bootstraps the first admin. */
     ADMIN_TELEGRAM_IDS: z
       .string()

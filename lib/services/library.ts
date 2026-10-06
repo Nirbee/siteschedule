@@ -188,11 +188,18 @@ export async function noteCounts(
 }
 
 /** For serving files: only existing, not deleted media. */
-export async function getServableMedia(id: string) {
+/** A file anyone with access may open; unsorted ones («Неразобранное») only for staff. */
+export async function getServableMedia(id: string, viewer?: Actor) {
   const [row] = await db()
     .select()
     .from(media)
-    .where(and(eq(media.id, id), isNull(media.deletedAt), isNotNull(media.subjectId)));
+    .where(
+      and(
+        eq(media.id, id),
+        isNull(media.deletedAt),
+        viewer && isStaff(viewer) ? undefined : isNotNull(media.subjectId),
+      ),
+    );
   return row;
 }
 
