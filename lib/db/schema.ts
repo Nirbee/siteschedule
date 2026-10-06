@@ -14,6 +14,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   smallint,
   text,
   time,
@@ -534,6 +535,58 @@ export const taskMaterials = pgTable(
     ),
     check("task_materials_page_check", sql`${t.page} is null or ${t.page} >= 1`),
   ],
+);
+
+// Teachers ----------------------------------------------------------------------
+export const teachers = pgTable("teachers", {
+  id: uuid().primaryKey().defaultRandom(),
+  fullName: text().notNull(),
+  email: text(), // the university address they give students
+  photoKey: text(), // 400×400 webp in storage
+  note: text(), // «в теме письма указывать группу»
+  sort: integer().notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const teacherSubjects = pgTable(
+  "teacher_subjects",
+  {
+    teacherId: uuid()
+      .notNull()
+      .references(() => teachers.id, { onDelete: "cascade" }),
+    subjectId: uuid()
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.teacherId, t.subjectId] })],
+);
+
+// Grades (личный трекер баллов) -------------------------------------------------
+/** How a subject is graded: modules, points per lesson, РК/tasks, scale (zod: lib/grades). */
+export const gradingSchemes = pgTable("grading_schemes", {
+  subjectId: uuid()
+    .primaryKey()
+    .references(() => subjects.id, { onDelete: "cascade" }),
+  config: jsonb().notNull(),
+  updatedBy: uuid().references(() => users.id),
+  updatedAt: timestamptz().notNull().defaultNow(),
+});
+
+/** A student's own marks: «был на паре» (att:…) and points for items (item:…, adj:…). */
+export const gradeMarks = pgTable(
+  "grade_marks",
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    subjectId: uuid()
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    key: text().notNull(),
+    value: real().notNull(),
+    updatedAt: timestamptz().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.subjectId, t.key] })],
 );
 
 // News ------------------------------------------------------------------------

@@ -51,7 +51,7 @@ export async function deleteObject(key: string): Promise<void> {
 }
 
 /** "media/2026-10/<uuid>" — month folders keep directories small. */
-export function newKey(prefix: "media" | "files", now = new Date()): string {
+export function newKey(prefix: "media" | "files" | "teachers", now = new Date()): string {
   const month = now.toISOString().slice(0, 7);
   return `${prefix}/${month}/${randomUUID()}`;
 }

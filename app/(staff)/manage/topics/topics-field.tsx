@@ -2,24 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import { Camera } from "lucide-react";
+import { shrinkImage } from "@/components/ui/shrink-image";
 import { parseTopics } from "@/lib/topics/parse";
 import { recognizeTopicsAction } from "./actions";
 
 const MAX_SIDE = 2200;
-
-/** Shrinks a phone photo before upload (server actions take ~1 MB); enough for printed text. */
-async function shrink(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/jpeg", 0.9),
-  );
-}
 
 /**
  * Topics textarea: paste from Excel, type one per line, or photograph the printed sheet.
@@ -37,7 +24,7 @@ export function TopicsField({ name = "topics" }: { name?: string }) {
       setError(null);
       try {
         const form = new FormData();
-        form.append("photo", await shrink(file), "sheet.jpg");
+        form.append("photo", await shrinkImage(file, MAX_SIDE), "sheet.jpg");
         const result = await recognizeTopicsAction(form);
         if (result.text)
           setText((current) => (current.trim() ? `${current}\n${result.text}` : result.text!));

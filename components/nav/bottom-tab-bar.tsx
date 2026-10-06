@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isActive } from "./nav-items";
+import { NAV_ITEMS, isItemActive } from "./nav-items";
 
 export function BottomTabBar() {
   const pathname = usePathname();
@@ -14,8 +14,9 @@ export function BottomTabBar() {
       className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="grid grid-cols-5">
-        {items.map(({ href, label, icon: Icon }) => {
-          const active = isActive(pathname, href);
+        {items.map((item) => {
+          const { href, label, icon: Icon } = item;
+          const active = isItemActive(pathname, item, "mobile");
           return (
             <li key={href}>
               <Link

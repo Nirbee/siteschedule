@@ -379,3 +379,36 @@ create table audit_log (
   payload     jsonb,
   created_at  timestamptz not null default now()
 );
+
+-- Преподаватели ----------------------------------------------------------------
+create table teachers (
+  id          uuid primary key default gen_random_uuid(),
+  full_name   text not null,
+  email       text,                               -- университетская почта для связи
+  photo_key   text,                               -- 400×400 webp
+  note        text,
+  sort        int not null default 0,
+  created_at  timestamptz not null default now()
+);
+create table teacher_subjects (
+  teacher_id  uuid not null references teachers(id) on delete cascade,
+  subject_id  uuid not null references subjects(id) on delete cascade,
+  primary key (teacher_id, subject_id)
+);
+
+-- Успеваемость (личный трекер, примерный подсчёт) -----------------------------------
+create table grading_schemes (
+  subject_id  uuid primary key references subjects(id) on delete cascade,
+  config      jsonb not null,                     -- модули, посещение, пункты, шкала (lib/grades/scheme.ts)
+  updated_by  uuid references users(id),
+  updated_at  timestamptz not null default now()
+);
+create table grade_marks (
+  user_id     uuid not null references users(id) on delete cascade,
+  subject_id  uuid not null references subjects(id) on delete cascade,
+  key         text not null,                      -- att:<дата>|<пара>, item:<key>, adj:<модуль>
+  value       real not null,
+  updated_at  timestamptz not null default now(),
+  primary key (user_id, subject_id, key)
+);
+

@@ -4,6 +4,8 @@ import Link from "next/link";
 import {
   CalendarCog,
   ClipboardCheck,
+  Gauge,
+  GraduationCap,
   History,
   Images,
   ListChecks,
@@ -57,6 +59,18 @@ export default async function ManagePage() {
           icon={ListChecks}
           title="Список тем"
           text="С фото листа или из Excel; код для тех, кто на паре; выгрузка для преподавателя"
+        />
+        <Tile
+          href="/teachers"
+          icon={GraduationCap}
+          title="Преподаватели"
+          text="Фото, ФИО, почта для связи, дисциплины"
+        />
+        <Tile
+          href="/manage/grades"
+          icon={Gauge}
+          title="Системы баллов"
+          text="Модули, минимумы, РК — для «Успеваемости»; сводка по группе"
         />
         <Tile
           href="/manage/changes"
