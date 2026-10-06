@@ -4,3 +4,4 @@ design/
 _archive/
 .next/
 dist/
+public/vendor/

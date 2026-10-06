@@ -8,6 +8,8 @@ const serverEnvSchema = z
     DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
     APP_URL: z.url(),
     STORAGE_DIR: z.string().min(1).default("./storage"),
+    /** Gotenberg (LibreOffice) for Office → PDF copies; without it Office files stay download-only. */
+    GOTENBERG_URL: z.url().optional(),
     BOT_API_SECRET: z.string().min(32, "BOT_API_SECRET must be at least 32 characters"),
     TELEGRAM_BOT_USERNAME: z.string().min(1).optional(),
     /** Dev only: grant access when the bot could not check chat membership (no chat configured). */

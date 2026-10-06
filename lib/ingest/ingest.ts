@@ -8,6 +8,7 @@ import type { LessonKind } from "@/lib/schedule/types";
 import { deleteObject, newKey, writeObject } from "@/lib/storage/disk";
 import { detectUpload, safeFileName } from "./detect";
 import { heavyJob } from "./limit";
+import { kickViewCopies, needsViewCopy } from "./convert";
 import { pdfPageCount } from "./pdf";
 import { processPhoto } from "./photo";
 
@@ -126,6 +127,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
         storageKey: key,
         fileName,
         pageCount,
+        viewStatus: needsViewCopy(fileName) ? "pending" : "none",
         mime: detected.mime,
         sizeBytes: input.bytes.length,
       };
@@ -153,6 +155,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
         sortedAt: new Date(),
       })
       .returning({ id: media.id });
+    if (row.viewStatus === "pending") kickViewCopies();
     return { status: "created", mediaId: created!.id, kind: detected.kind, lessonNoteId };
   } catch (error) {
     await Promise.all(written.map((key) => deleteObject(key)));

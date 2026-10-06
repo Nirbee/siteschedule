@@ -27,3 +27,6 @@ Thumbs.db
 
 # local Claude Code settings
 .claude/settings.local.json
+
+# build artifacts copied from node_modules
+/public/vendor/

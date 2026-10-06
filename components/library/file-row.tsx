@@ -1,3 +1,5 @@
+import Link from "next/link";
+import type { Route } from "next";
 import {
   BookOpen,
   FileArchive,
@@ -29,7 +31,6 @@ const ICONS: Record<string, LucideIcon> = {
 /** A document: opens in the browser (PDF) or downloads; meta line with type, size, pages, author. */
 export function FileRow({ item, canEdit }: { item: LibraryItem; canEdit: boolean }) {
   const Icon = ICONS[extensionOf(item.fileName)] ?? FileText;
-  const isPdf = item.mime === "application/pdf";
   const meta = [
     fileTypeLabel(item.fileName),
     formatBytes(item.sizeBytes),
@@ -43,15 +44,10 @@ export function FileRow({ item, canEdit }: { item: LibraryItem; canEdit: boolean
   return (
     <div className="flex items-center gap-3 rounded-[12px] border border-line bg-surface p-2.5 pl-3">
       <Icon size={22} strokeWidth={1.8} className="shrink-0 text-accent" aria-hidden />
-      <a
-        href={`/media/${item.id}`}
-        target={isPdf ? "_blank" : undefined}
-        rel={isPdf ? "noopener" : undefined}
-        className="min-w-0 flex-1 text-ink no-underline"
-      >
+      <Link href={`/view/${item.id}` as Route} className="min-w-0 flex-1 text-ink no-underline">
         <span className="line-clamp-2 font-semibold break-words">{displayName(item)}</span>
         <span className="block truncate text-[13px] text-muted">{meta}</span>
-      </a>
+      </Link>
       {canEdit ? <ItemActions id={item.id} title={item.title} kind="file" /> : null}
     </div>
   );

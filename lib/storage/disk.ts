@@ -42,8 +42,8 @@ export async function objectSize(key: string): Promise<number | null> {
   }
 }
 
-export function readObject(key: string) {
-  return createReadStream(objectPath(key));
+export function readObject(key: string, range?: { start: number; end: number }) {
+  return createReadStream(objectPath(key), range);
 }
 
 export async function deleteObject(key: string): Promise<void> {

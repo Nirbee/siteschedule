@@ -352,6 +352,9 @@ export const media = pgTable(
     fileName: text().notNull(),
     title: text(), // display name for files («Unknown 7.pdf» → «Задачи к семинару 3»)
     pageCount: integer(), // PDF only
+    // PDF copy for in-site viewing of Office/DjVu files (created in the background).
+    viewKey: text(),
+    viewStatus: text().notNull().default("none"),
     mime: text().notNull(),
     sizeBytes: integer().notNull(),
     width: integer(),
@@ -393,6 +396,13 @@ export const media = pgTable(
     uniqueIndex("media_tg_message_unique")
       .on(t.tgChatId, t.tgMessageId)
       .where(sql`${t.tgMessageId} is not null`),
+    check(
+      "media_view_status_check",
+      sql`${t.viewStatus} in ('none', 'pending', 'ready', 'failed')`,
+    ),
+    index("media_view_pending")
+      .on(t.createdAt)
+      .where(sql`${t.viewStatus} = 'pending' and ${t.deletedAt} is null`),
     check("media_sorted_has_subject", sql`${t.status} = 'unsorted' or ${t.subjectId} is not null`),
     check("media_lesson_has_subject", sql`${t.lessonNoteId} is null or ${t.subjectId} is not null`),
   ],

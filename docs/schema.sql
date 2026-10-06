@@ -232,6 +232,8 @@ create table media (
   file_name           text not null,
   title               text,                       -- отображаемое название файла
   page_count          int,                        -- число страниц (PDF)
+  view_key            text,                       -- PDF-копия для просмотра (Office, DjVu)
+  view_status         text not null default 'none', -- none | pending | ready | failed
   mime                text not null,
   size_bytes          int not null,
   width               int,

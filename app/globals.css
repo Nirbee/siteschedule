@@ -39,6 +39,9 @@
   /* Photo viewer is dark in both themes. */
   --color-viewer: #0b0c0f;
   --color-on-viewer: #f1f2f4;
+  --color-paper: #ffffff; /* document pages, same in both themes */
+  --color-on-paper: #15171c;
+  --color-paper-line: #d5d8d0;
 
   --font-display: var(--font-unbounded), system-ui, sans-serif;
   --font-sans: var(--font-manrope), system-ui, sans-serif;

@@ -31,10 +31,29 @@ services:
 
   app:
     <<: *app
+    environment:
+      DATABASE_URL: postgres://para:${POSTGRES_PASSWORD}@postgres:5432/para
+      STORAGE_DIR: /data/storage
+      GOTENBERG_URL: http://gotenberg:3000
     volumes:
       - storage:/data/storage
     depends_on:
       postgres: { condition: service_healthy }
+
+  # Office → PDF copies for viewing documents on the site (LibreOffice only, no browser).
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    command:
+      - gotenberg
+      - --chromium-auto-start=false
+      - --libreoffice-restart-after=20
+      - --api-timeout=180s
+      - --log-level=warn
+    mem_limit: 1g
+    logging:
+      driver: local
+      options: { max-size: "10m", max-file: "3" }
 
   bot:
     <<: *app

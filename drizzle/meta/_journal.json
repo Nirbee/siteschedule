@@ -15,6 +15,13 @@
       "when": 1791287387072,
       "tag": "0001_media_title_pages",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791290023747,
+      "tag": "0002_media_view_copy",
+      "breakpoints": true
     }
   ]
 }
