@@ -28,6 +28,7 @@ docker compose up -d && pnpm db:migrate && pnpm db:seed && pnpm dev
 | `pnpm db:generate`                           | миграция из изменений `lib/db/schema.ts`       |
 | `pnpm db:migrate`                            | применить миграции                             |
 | `pnpm db:seed`                               | пересоздать демо-данные (стирает все таблицы!) |
+| `pnpm schedule:import <файл>` | загрузить реальное расписание из JSON (файл держать в `data/private/`) |
 | `pnpm db:studio`                             | просмотр БД в браузере                         |
 | `pnpm lint` · `pnpm typecheck` · `pnpm test` | проверки (то же гоняет CI)                     |
 

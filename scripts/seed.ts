@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as s from "../lib/db/schema";
+import { addDays, mondayOf, todayInMoscow } from "../lib/schedule/dates";
 
 if (process.env.NODE_ENV === "production") {
   throw new Error("Refusing to seed demo data in production.");
@@ -210,9 +211,56 @@ async function main() {
         groupId: g12.id,
       },
     ];
-    await tx
+    const [admin] = await tx
       .insert(s.users)
-      .values(demoUsers.map((user) => ({ ...user, hasAccess: true, icalToken: token() })));
+      .values(demoUsers.map((user) => ({ ...user, hasAccess: true, icalToken: token() })))
+      .returning();
+
+    // Demo changes in the current week, so every status is visible on «Сегодня».
+    const monday = mondayOf(todayInMoscow());
+    const entryId = (i: number) => entryRows[i]!.id;
+    const demoChanges: Omit<typeof s.scheduleChanges.$inferInsert, "authorId">[] = [
+      {
+        type: "cancel",
+        date: addDays(monday, 1),
+        entryId: entryId(5),
+        comment: "Преподаватель на конференции, отработку назначат позже.",
+      },
+      {
+        type: "replace",
+        date: addDays(monday, 2),
+        entryId: entryId(6),
+        newSubjectId: subject("ПО ИБ"),
+        newRoom: "210",
+        comment: "Сегодня выступают первые трое по темам.",
+      },
+      {
+        type: "move",
+        date: addDays(monday, 3),
+        entryId: entryId(8),
+        newDate: addDays(monday, 5),
+        newStartsAt: "10:00",
+        newEndsAt: "11:30",
+        comment: "Принести ноутбуки.",
+      },
+      {
+        type: "add",
+        date: addDays(monday, 4),
+        slotN: 3,
+        newSubjectId: subject("КП"),
+        newKind: "lecture",
+        newRoom: "412",
+      },
+    ];
+    const changeRows = await tx
+      .insert(s.scheduleChanges)
+      .values(demoChanges.map((c) => ({ ...c, authorId: admin!.id })))
+      .returning({ id: s.scheduleChanges.id });
+    await tx
+      .insert(s.scheduleChangeGroups)
+      .values(
+        changeRows.flatMap(({ id }) => [g11, g12].map((g) => ({ changeId: id, groupId: g.id }))),
+      );
   });
 
   const counts = await db.execute<{ table: string; n: number }>(sql`
@@ -220,6 +268,7 @@ async function main() {
     union all select 'subjects', count(*)::int from subjects
     union all select 'schedule_entries', count(*)::int from schedule_entries
     union all select 'users', count(*)::int from users
+    union all select 'schedule_changes', count(*)::int from schedule_changes
   `);
   console.info("Seeded demo data:", Object.fromEntries(counts.map((r) => [r.table, r.n])));
 }

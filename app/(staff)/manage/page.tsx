@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import type { Route } from "next";
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { CalendarCog, History, Pencil, Users, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StagePlaceholder } from "@/components/ui/stage-placeholder";
+import { buttonClass } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/current";
 
 export const metadata: Metadata = { title: "Панель старосты" };
@@ -13,23 +15,59 @@ export default async function ManagePage() {
   return (
     <>
       <PageHeader eyebrow={user.role === "admin" ? "Админ" : "Староста"} title="Панель" />
-      <div className="flex max-w-xl flex-col gap-4">
+      <div className="flex max-w-xl flex-col gap-3">
+        <Link href="/manage/changes/new" className={buttonClass("primary", "w-full")}>
+          <Pencil size={20} aria-hidden /> Изменить расписание
+        </Link>
+        <Tile
+          href="/manage/changes"
+          icon={History}
+          title="История изменений"
+          text="Кто, что и когда менял; отзыв ошибочных"
+        />
+        <Tile
+          href="/manage/schedule"
+          icon={CalendarCog}
+          title="Базовое расписание"
+          text="Семестр, дисциплины, пары по дням"
+        />
         {user.role === "admin" ? (
-          <Link
+          <Tile
             href="/manage/users"
-            className="flex items-center gap-4 rounded-card border border-line bg-surface p-[14px] text-ink no-underline hover:bg-surface-muted md:p-[22px]"
-          >
-            <Users size={22} strokeWidth={1.8} className="text-accent" aria-hidden />
-            <span>
-              <span className="block font-bold">Пользователи</span>
-              <span className="text-[14px] text-muted">Доступ, роли, группы, ссылки для входа</span>
-            </span>
-          </Link>
+            icon={Users}
+            title="Пользователи"
+            text="Доступ, роли, группы, ссылки для входа"
+          />
         ) : null}
-        <StagePlaceholder stage="M2">
-          Изменения расписания, базовое расписание, «Неразобранное», новости, темы и рубежки.
+        <StagePlaceholder stage="M4–M8">
+          «Неразобранное», новости, темы и рубежки появятся на следующих этапах.
         </StagePlaceholder>
       </div>
     </>
+  );
+}
+
+function Tile({
+  href,
+  icon: Icon,
+  title,
+  text,
+}: {
+  href: Route;
+  icon: LucideIcon;
+  title: string;
+  text: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-4 rounded-card border border-line bg-surface p-[14px] text-ink no-underline hover:bg-surface-muted md:p-[22px]"
+    >
+      <Icon size={22} strokeWidth={1.8} className="shrink-0 text-accent" aria-hidden />
+      <span>
+        <span className="block font-bold">{title}</span>
+        <span className="text-[14px] text-muted">{text}</span>
+      </span>
+    </Link>
   );
 }
