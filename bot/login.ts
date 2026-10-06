@@ -81,7 +81,8 @@ export async function handleLoginStart(
   }
 
   const sent = await ctx.reply("Готово ✅ Вернитесь в браузер — вход завершится сам.", {
-    reply_markup: linkKeyboard("Вернуться на сайт", result.siteUrl),
+    // /login finishes an already confirmed login in a new tab (see login-panel).
+    reply_markup: linkKeyboard("Вернуться на сайт", new URL("/login", result.siteUrl).toString()),
   });
   scheduleDelete(ctx.api, sent.chat.id, sent.message_id);
 }

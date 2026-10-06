@@ -2,16 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
+import { POLL_TOKEN_HEADER } from "@/lib/auth/constants";
 import type { PollResponse } from "@/app/api/auth/poll/route";
-import { devLoginAction, startQrLoginAction, startTelegramLoginAction } from "./actions";
+import {
+  devLoginAction,
+  startQrLoginAction,
+  startTelegramLoginAction,
+  type StartLoginResult,
+} from "./actions";
 
 type DevUser = { id: string; displayName: string; role: string };
 
 type State =
   | { mode: "telegram"; step: "starting" }
-  | { mode: "telegram"; step: "ready" | "waiting"; botUrl: string }
+  | { mode: "telegram"; step: "ready" | "waiting"; botUrl: string; pollToken: string }
   | { mode: "qr"; step: "starting" }
-  | { mode: "qr"; step: "waiting"; qrSvg: string; approveUrl: string }
+  | { mode: "qr"; step: "waiting"; qrSvg: string; approveUrl: string; pollToken: string }
   | { mode: "telegram" | "qr"; step: "expired" }
   | { mode: "telegram" | "qr"; step: "error"; error: string };
 
@@ -19,7 +25,11 @@ const POLL_INTERVAL_MS = 2000;
 
 export function LoginPanel({ devUsers }: { devUsers: DevUser[] }) {
   const [state, setState] = useState<State>({ mode: "telegram", step: "starting" });
-  const polling = state.step === "waiting" || state.step === "ready";
+  // Each tab polls its own login request; the cookie only helps a tab opened from the bot.
+  const pollToken =
+    (state.step === "waiting" || state.step === "ready") && "pollToken" in state
+      ? state.pollToken
+      : null;
 
   const startTelegram = useCallback(async () => {
     setState({ mode: "telegram", step: "starting" });
@@ -31,23 +41,31 @@ export function LoginPanel({ devUsers }: { devUsers: DevUser[] }) {
     const result = await startQrLoginAction();
     setState(
       result.ok
-        ? { mode: "qr", step: "waiting", qrSvg: result.qrSvg, approveUrl: result.approveUrl }
+        ? {
+            mode: "qr",
+            step: "waiting",
+            qrSvg: result.qrSvg,
+            approveUrl: result.approveUrl,
+            pollToken: result.pollToken,
+          }
         : { mode: "qr", step: "error", error: result.error },
     );
   }, []);
 
-  // The bot link is prepared right away, so «Войти через Telegram» opens it with a single tap.
+  // First finish a login that was already confirmed (e.g. this tab was opened by the bot's
+  // «Вернуться на сайт» button); otherwise prepare the bot link right away for a one-tap login.
   useEffect(() => {
     let cancelled = false;
-    void startTelegramLoginAction().then((result) => {
-      if (!cancelled) setState(telegramState(result));
+    void initialLogin().then((result) => {
+      if (result === "logged-in") window.location.replace("/");
+      else if (!cancelled) setState(telegramState(result));
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  usePoll(polling, () => setState((s) => ({ mode: s.mode, step: "expired" })));
+  usePoll(pollToken, () => setState((s) => ({ mode: s.mode, step: "expired" })));
 
   return (
     <div className="flex flex-col gap-5">
@@ -87,9 +105,27 @@ export function LoginPanel({ devUsers }: { devUsers: DevUser[] }) {
   );
 }
 
+/**
+ * Starts at most one login per mount, even though React mounts effects twice in development:
+ * a second request would overwrite the poll cookie and break the «return from the bot» path.
+ * Reused only for a moment, so a later visit to /login (e.g. after logout) starts fresh.
+ */
+let initialLoginCache: { at: number; promise: Promise<"logged-in" | StartLoginResult> } | null =
+  null;
+function initialLogin() {
+  if (!initialLoginCache || Date.now() - initialLoginCache.at > 2000) {
+    initialLoginCache = {
+      at: Date.now(),
+      promise: (async () =>
+        (await pollOnce()) === "ok" ? ("logged-in" as const) : startTelegramLoginAction())(),
+    };
+  }
+  return initialLoginCache.promise;
+}
+
 function telegramState(result: Awaited<ReturnType<typeof startTelegramLoginAction>>): State {
   return result.ok
-    ? { mode: "telegram", step: "ready", botUrl: result.botUrl }
+    ? { mode: "telegram", step: "ready", botUrl: result.botUrl, pollToken: result.pollToken }
     : { mode: "telegram", step: "error", error: result.error };
 }
 
@@ -233,36 +269,45 @@ function Spinner() {
   );
 }
 
-/** Polls /api/auth/poll while active: every 2 s when visible, immediately on returning to the tab. */
-function usePoll(active: boolean, onExpired: () => void) {
+async function pollOnce(pollToken?: string | null): Promise<PollResponse["status"] | "error"> {
+  try {
+    const response = await fetch("/api/auth/poll", {
+      cache: "no-store",
+      headers: pollToken ? { [POLL_TOKEN_HEADER]: pollToken } : {},
+    });
+    return ((await response.json()) as PollResponse).status;
+  } catch {
+    return "error"; // network hiccup (e.g. VPN switching) — try again on the next tick
+  }
+}
+
+/**
+ * Polls /api/auth/poll while active: every 2 s (also in background tabs — on desktop the tab is
+ * often hidden behind Telegram while the user presses Start) and immediately on returning to the tab.
+ */
+function usePoll(pollToken: string | null, onExpired: () => void) {
   const onExpiredRef = useRef(onExpired);
   useEffect(() => {
     onExpiredRef.current = onExpired;
   });
 
   useEffect(() => {
-    if (!active) return;
+    if (!pollToken) return;
     let stopped = false;
     let inFlight = false;
 
     async function check() {
-      if (stopped || inFlight || document.visibilityState !== "visible") return;
+      if (stopped || inFlight) return;
       inFlight = true;
-      try {
-        const response = await fetch("/api/auth/poll", { cache: "no-store" });
-        const { status } = (await response.json()) as PollResponse;
-        if (stopped) return;
-        if (status === "ok") {
-          stopped = true;
-          window.location.replace("/");
-        } else if (status === "expired") {
-          stopped = true;
-          onExpiredRef.current();
-        }
-      } catch {
-        // network hiccup (e.g. VPN switching) — try again on the next tick
-      } finally {
-        inFlight = false;
+      const status = await pollOnce(pollToken);
+      inFlight = false;
+      if (stopped) return;
+      if (status === "ok") {
+        stopped = true;
+        window.location.replace("/");
+      } else if (status === "expired") {
+        stopped = true;
+        onExpiredRef.current();
       }
     }
 
@@ -275,5 +320,5 @@ function usePoll(active: boolean, onExpired: () => void) {
       document.removeEventListener("visibilitychange", check);
       window.removeEventListener("focus", check);
     };
-  }, [active]);
+  }, [pollToken]);
 }

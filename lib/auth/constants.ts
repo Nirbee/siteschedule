@@ -1,5 +1,7 @@
 export const SESSION_COOKIE = "para_session";
 export const LOGIN_POLL_COOKIE = "para_login";
+/** The waiting tab sends its own poll token; the cookie is the fallback for a new tab. */
+export const POLL_TOKEN_HEADER = "x-login-poll";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

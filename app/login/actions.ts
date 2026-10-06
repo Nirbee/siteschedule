@@ -11,10 +11,11 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { createSession, startLogin } from "@/lib/services/auth";
 
 export type StartLoginResult =
-  { ok: true; botUrl: string; expiresAt: string } | { ok: false; error: string };
+  { ok: true; botUrl: string; pollToken: string; expiresAt: string } | { ok: false; error: string };
 
 export type StartQrResult =
-  { ok: true; qrSvg: string; approveUrl: string; expiresAt: string } | { ok: false; error: string };
+  | { ok: true; qrSvg: string; approveUrl: string; pollToken: string; expiresAt: string }
+  | { ok: false; error: string };
 
 const TOO_MANY = "Слишком много попыток входа. Подождите пару минут.";
 
@@ -33,6 +34,7 @@ export async function startTelegramLoginAction(): Promise<StartLoginResult> {
   return {
     ok: true,
     botUrl: `https://t.me/${username}?start=${code}`,
+    pollToken,
     expiresAt: expiresAt.toISOString(),
   };
 }
@@ -48,7 +50,7 @@ export async function startQrLoginAction(): Promise<StartQrResult> {
     margin: 1,
     errorCorrectionLevel: "M",
   });
-  return { ok: true, qrSvg, approveUrl, expiresAt: expiresAt.toISOString() };
+  return { ok: true, qrSvg, approveUrl, pollToken, expiresAt: expiresAt.toISOString() };
 }
 
 /** Development only: log in as a seeded user without Telegram. */
