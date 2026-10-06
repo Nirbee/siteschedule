@@ -1,17 +1,28 @@
-import { Megaphone, TriangleAlert } from "lucide-react";
-import { formatRoom } from "@/lib/schedule/format";
+import Link from "next/link";
+import type { Route } from "next";
+import { Images, Megaphone, TriangleAlert } from "lucide-react";
+import { formatRoom, plural } from "@/lib/schedule/format";
 import type { ResolvedLesson } from "@/lib/schedule/types";
 import { KindBadge, StatusBadge } from "./badges";
 
 /** A lesson with all its statuses (docs/DESIGN.md «LessonCard»). */
+export interface LessonNotesInfo {
+  noteId: string;
+  photos: number;
+  files: number;
+}
+
 export function LessonCard({
   lesson,
   compact = false,
   showConflict = false,
+  notes,
 }: {
   lesson: ResolvedLesson;
   compact?: boolean;
   showConflict?: boolean;
+  /** Photos/files uploaded for this lesson, if any. */
+  notes?: LessonNotesInfo;
 }) {
   if (lesson.kind === "self_study") return <SelfStudyCard lesson={lesson} compact={compact} />;
 
@@ -63,6 +74,7 @@ export function LessonCard({
         ) : null}
         {meta ? <p className="mt-0.5 text-[14px] text-muted">{meta}</p> : null}
         {lesson.comment && !compact ? <StaffNote text={lesson.comment} /> : null}
+        {notes ? <NotesLink subjectId={lesson.subject.id} notes={notes} /> : null}
         {lesson.conflict && showConflict ? (
           <p className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-cancel">
             <TriangleAlert size={16} aria-hidden /> Пересекается по времени с другой парой
@@ -85,6 +97,21 @@ function SelfStudyCard({ lesson, compact }: { lesson: ResolvedLesson; compact: b
       </div>
       <p className="text-[14px] font-semibold">{lesson.subject.name}</p>
     </article>
+  );
+}
+
+function NotesLink({ subjectId, notes }: { subjectId: string; notes: LessonNotesInfo }) {
+  const parts = [
+    notes.photos ? plural(notes.photos, "фото", "фото", "фото") : null,
+    notes.files ? plural(notes.files, "файл", "файла", "файлов") : null,
+  ].filter(Boolean);
+  return (
+    <Link
+      href={`/library/${subjectId}#note-${notes.noteId}` as Route}
+      className="mt-2.5 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-[13px] font-semibold text-ink-2 no-underline hover:bg-chip"
+    >
+      <Images size={16} aria-hidden /> Конспекты · {parts.join(", ")}
+    </Link>
   );
 }
 

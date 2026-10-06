@@ -36,6 +36,10 @@
   --color-add: #0f6b4d;
   --color-add-bg: #ddf1e7;
 
+  /* Photo viewer is dark in both themes. */
+  --color-viewer: #0b0c0f;
+  --color-on-viewer: #f1f2f4;
+
   --font-display: var(--font-unbounded), system-ui, sans-serif;
   --font-sans: var(--font-manrope), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;

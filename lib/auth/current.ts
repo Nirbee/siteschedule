@@ -50,3 +50,9 @@ const isGroupEnabled = cache(async (groupId: string) => {
     .where(eq(groups.id, groupId));
   return group?.isEnabled === true;
 });
+
+/** For route handlers that answer 401 instead of redirecting. */
+export async function getMember(): Promise<CurrentUser | null> {
+  const current = await getCurrentUser();
+  return current?.user.hasAccess ? current : null;
+}

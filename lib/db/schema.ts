@@ -350,6 +350,8 @@ export const media = pgTable(
     storageKey: text().notNull(),
     previewKey: text(),
     fileName: text().notNull(),
+    title: text(), // display name for files («Unknown 7.pdf» → «Задачи к семинару 3»)
+    pageCount: integer(), // PDF only
     mime: text().notNull(),
     sizeBytes: integer().notNull(),
     width: integer(),

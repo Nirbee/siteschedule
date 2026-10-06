@@ -76,7 +76,7 @@
 - `StaffNote` — плашка комментария старосты с иконкой рупора
 - `NewsItem`, `ExamItem` (карточка `emph`: дата моно + предмет + форма · «через N дней»)
 - `TopicTable` (места «1/2», участники) + `QueueByDate`
-- `MediaGrid` (3:4 превью, `auto-fill minmax(150px, 1fr)`), `Lightbox`, `FileRow`
+- `PhotoGrid` (превью 4:3 — большинство фото это слайды, `auto-fill minmax(140px, 1fr)`), полноэкранный просмотр (свайп, стрелки, зум двойным тапом в точку; токены `viewer`/`on-viewer` — тёмный в обеих темах), `FileRow` (иконка по типу, размер, страницы, переименование)
 - `UploadButton` / `UploadSheet`
 - `InboxGrid` — «Неразобранное»: мультивыбор, подсказка, «Отнести к…»
 - `SegmentedControl` (форма старосты; 5 типов — две строки или горизонтальный скролл), `Field`, `Select`, `Textarea`, `Checkbox`, `TimePicker` (слот из сетки / «другое время»)

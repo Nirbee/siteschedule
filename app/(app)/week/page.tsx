@@ -8,6 +8,8 @@ import { addDays, isIsoDate, mondayOf, todayInMoscow } from "@/lib/schedule/date
 import { dayMonth, shortWeekday } from "@/lib/schedule/format";
 import { resolveWeek } from "@/lib/schedule/resolve";
 import { PARITY_LABELS, weekInfo } from "@/lib/schedule/week";
+import { lessonKey } from "@/lib/ingest/targets";
+import { noteCounts } from "@/lib/services/library";
 import { loadScheduleData } from "@/lib/services/schedule";
 
 export const metadata: Metadata = { title: "Расписание" };
@@ -31,6 +33,13 @@ export default async function WeekPage({
   }
 
   const week = resolveWeek(data, monday, user.groupId!);
+  const notes = await noteCounts(monday, addDays(monday, 6));
+  const notesFor = (l: (typeof week)[number]["lessons"][number]) =>
+    l.status === "cancelled" || l.status === "moved_out"
+      ? undefined
+      : notes.get(
+          lessonKey({ subjectId: l.subject.id, date: l.date, slotN: l.slotN, time: l.time }),
+        );
   const days = week.filter((d, i) => i < 6 || d.lessons.length > 0);
   const info = weekInfo(data.semester, monday) ?? weekInfo(data.semester, addDays(monday, 5));
   const lastDay = days[days.length - 1]?.date ?? addDays(monday, 5);
@@ -90,6 +99,7 @@ export default async function WeekPage({
                   <LessonCard
                     key={`${lesson.entryId ?? lesson.changeId}-${i}`}
                     lesson={lesson}
+                    notes={notesFor(lesson)}
                     compact
                     showConflict={staff}
                   />

@@ -230,6 +230,8 @@ create table media (
   storage_key         text not null,              -- фото: webp ≤2560px; файл: как есть
   preview_key         text,                       -- 480px webp, только фото
   file_name           text not null,
+  title               text,                       -- отображаемое название файла
+  page_count          int,                        -- число страниц (PDF)
   mime                text not null,
   size_bytes          int not null,
   width               int,

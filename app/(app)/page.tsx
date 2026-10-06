@@ -10,6 +10,8 @@ import { dayMonth, plural, shortDate, weekdayName } from "@/lib/schedule/format"
 import { resolveDay, resolveWeek, summarizeDay } from "@/lib/schedule/resolve";
 import type { ScheduleData } from "@/lib/schedule/types";
 import { PARITY_LABELS, weekInfo } from "@/lib/schedule/week";
+import { lessonKey } from "@/lib/ingest/targets";
+import { noteCounts } from "@/lib/services/library";
 import { loadScheduleData } from "@/lib/services/schedule";
 
 export default async function TodayPage({
@@ -33,6 +35,13 @@ export default async function TodayPage({
 
   const monday = mondayOf(date);
   const week = resolveWeek(data, monday, groupId);
+  const notes = await noteCounts(monday, addDays(monday, 6));
+  const notesFor = (l: (typeof week)[number]["lessons"][number]) =>
+    l.status === "cancelled" || l.status === "moved_out"
+      ? undefined
+      : notes.get(
+          lessonKey({ subjectId: l.subject.id, date: l.date, slotN: l.slotN, time: l.time }),
+        );
   const lessons = week.find((d) => d.date === date)?.lessons ?? [];
   const info = weekInfo(data.semester, date);
   const summary = summarizeDay(lessons);
@@ -88,6 +97,7 @@ export default async function TodayPage({
             <LessonCard
               key={`${lesson.entryId ?? lesson.changeId}-${i}`}
               lesson={lesson}
+              notes={notesFor(lesson)}
               showConflict={staff}
             />
           ))
